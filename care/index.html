@@ -1,0 +1,1766 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CARE 3.0 · Sistema Integral de Gestión Geriátrica</title>
+<style>
+:root{
+ --bg:#eef3f8;--card:#fff;--text:#172033;--muted:#667085;--line:#dfe5ec;
+ --primary:#174ea6;--primary2:#2563eb;--green:#15803d;--red:#b91c1c;--orange:#b45309;
+ --purple:#6d28d9;--shadow:0 8px 30px rgba(23,32,51,.08);--radius:16px
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+
+/* LOGIN */
+.login{position:fixed;inset:0;background:linear-gradient(135deg,#0d2f63,#2563eb);display:flex;align-items:center;justify-content:center;z-index:100}
+.login-card{width:min(440px,92%);background:#fff;border-radius:24px;padding:34px;box-shadow:0 25px 80px #001b4a55;text-align:center}
+.logo{width:78px;height:78px;border-radius:22px;background:#eaf2ff;display:grid;place-items:center;font-size:40px;margin:0 auto 15px}
+.login h1{font-size:34px;margin:8px 0 3px}.login p{color:var(--muted);margin:0 0 25px}
+.login input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+.login .enter{width:100%;padding:13px;background:var(--primary2);color:white;border-radius:12px;font-weight:700}
+
+/* HEADER & LAYOUT */
+.app{display:none;min-height:100vh}
+header{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+.brand{display:flex;gap:12px;align-items:center}.brand-icon{font-size:28px}.brand strong{display:block}.brand small{color:var(--muted)}
+.userbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.clock{font-size:13px;color:var(--muted)}
+.layout{display:flex;min-height:calc(100vh - 72px)}
+aside{width:250px;background:#102f61;color:#dbeafe;padding:16px 12px;flex-shrink:0}
+nav button{display:block;width:100%;text-align:left;background:transparent;color:#dbeafe;padding:11px;border-radius:10px;margin:3px 0;transition:.15s}
+nav button:hover,nav button.active{background:#ffffff22;color:#fff;font-weight:600}
+.navtitle{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#91acd5;margin:16px 10px 6px}
+main{flex:1;padding:24px;overflow:auto}.view{display:none}.view.active{display:block}
+.page-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.page-title h2{margin:0}.page-title p{margin:5px 0 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{padding:10px 14px;border-radius:10px;background:var(--primary2);color:#fff;font-weight:650;transition:.15s}
+.btn:hover{filter:brightness(1.06)}
+.btn.secondary{background:#eaf1ff;color:#174ea6}.btn.green{background:#15803d;color:#fff}
+.btn.red{background:#fee2e2;color:#991b1b}.btn.gray{background:#edf0f4;color:#344054}
+.btn.orange{background:#fff1d6;color:#92400e}.btn.purple{background:#ede9fe;color:#5b21b6}
+.btn.sm{padding:6px 9px;font-size:12px}.btn.xs{padding:4px 7px;font-size:11px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* STATS & CARDS */
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:var(--shadow)}
+.stat b{font-size:25px;display:block}.stat span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:17px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px}.muted{color:var(--muted)}
+.searchbar{display:flex;gap:9px;margin-bottom:15px;flex-wrap:wrap}.searchbar input{flex:1;min-width:200px}
+input,select,textarea{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#7aa7f7;box-shadow:0 0 0 3px #2563eb18}
+
+/* TABLES & BADGES */
+.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px;vertical-align:top}
+th{background:#f7f9fc;font-size:12px;color:#475467}tr:last-child td{border-bottom:0}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.danger{background:#fee2e2;color:#991b1b}
+.blue{background:#dbeafe;color:#1d4ed8}.purplebadge{background:#ede9fe;color:#5b21b6}.graybadge{background:#eef2f6;color:#475467}
+
+/* ROOMS */
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.room{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:var(--shadow)}
+.roomhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.beds{display:grid;gap:8px}
+.bed{border:1px solid var(--line);border-radius:11px;padding:10px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.bed.free{background:#f0fdf4;border-color:#bbf7d0}
+.bedname{font-size:11px;color:var(--muted)}.patient{font-weight:700;margin-top:3px}
+
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;background:#06142b99;z-index:50;padding:20px;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:#fff;width:min(1050px,100%);max-height:94vh;overflow:auto;border-radius:20px;padding:21px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.modal-head h2{margin:0}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}
+.section-title{grid-column:1/-1;background:#f5f8fc;border-radius:10px;padding:9px;font-weight:700;color:#174ea6;margin-top:5px}
+
+/* LISTS, ALERTS, TOAST */
+.mini-list{display:grid;gap:8px}
+.mini-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:8px 0;align-items:flex-start}
+.mini-row:last-child{border-bottom:0}
+.kpi{font-size:30px;font-weight:800}
+.alert{padding:12px;border-radius:11px;margin-bottom:10px}
+.alert.red{background:#fff1f2;color:#991b1b;border:1px solid #fecdd3}
+.alert.yellow{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.alert.green{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.alert.blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.checkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.check{display:flex;align-items:center;gap:7px;background:#f8fafc;padding:9px;border-radius:9px;font-size:13px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.toast{position:fixed;right:18px;bottom:18px;background:#172033;color:#fff;padding:13px 16px;border-radius:11px;display:none;z-index:90;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.subtle{font-size:12px;color:var(--muted)}
+.record-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.record-actions .btn{padding:4px 8px;font-size:11px}
+
+/* PLANILLA MATRICIAL (ESTILO EXCEL GUARDIA CARE) */
+.roster-wrap{overflow-x:auto;background:#fff;border:2px solid #1e293b;border-radius:10px;box-shadow:var(--shadow)}
+.roster-table{border-collapse:collapse;width:100%;min-width:1120px;font-size:12px}
+.roster-table th,.roster-table td{border:1px solid #475569;text-align:center;padding:3px 2px;height:28px;min-width:29px}
+.roster-banner{background:#8ea9db;color:#0f172a;font-weight:800;font-size:14px;letter-spacing:.04em;padding:7px !important;text-transform:uppercase}
+.roster-date-hdr{background:#c6e0b4;color:#0f172a;font-weight:700}
+.roster-day-hdr{background:#c6e0b4;color:#0f172a;font-weight:700}
+.roster-day-hdr.sun{color:#dc2626;font-weight:800}
+.roster-name-col{position:sticky;left:0;z-index:5;background:#f8fafc;text-align:left !important;padding:4px 8px !important;font-weight:700;min-width:165px !important;max-width:190px;white-space:nowrap;border-right:2px solid #334155 !important}
+.roster-name-col.night-row{background:#8ea9db;color:#0f172a}
+.roster-row-actions{display:inline-flex;gap:3px;float:right;opacity:.75}
+.roster-row-actions:hover{opacity:1}
+.roster-cell{font-weight:700;cursor:pointer;user-select:none;transition:background .1s;font-size:12px}
+.roster-cell.wknd{background:#b4c6e7}
+.roster-cell:hover{outline:2px solid #2563eb;z-index:2;position:relative}
+.code-M,.code-T,.code-N{color:#0f172a}
+.code-F,.code-E{color:#dc2626;font-weight:800}
+.code-V{background:#ffff00 !important;color:#0f172a;font-weight:900}
+.is-vigia{color:#1d4ed8 !important;font-weight:900 !important;text-decoration:underline;text-decoration-thickness:2px}
+.roster-legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;margin-top:10px}
+.legend-pill{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);padding:4px 9px;border-radius:8px;font-weight:600}
+
+/* GUARDIA DEL DÍA WIDGET */
+.guard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.guard-box{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:11px}
+.guard-box h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;color:#174ea6;letter-spacing:.04em}
+.guard-box.vigia{background:#eff6ff;border-color:#93c5fd}
+.guard-box.vigia h4{color:#1e40af}
+.guard-tags{display:flex;flex-wrap:wrap;gap:4px}
+.gtag{background:#fff;border:1px solid #cbd5e1;padding:3px 7px;border-radius:6px;font-size:12px;font-weight:600}
+.gtag.nurse{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}
+.gtag.vigia{background:#dbeafe;border-color:#3b82f6;color:#1d4ed8;font-weight:700}
+.gtag.franco{background:#fee2e2;border-color:#fca5a5;color:#991b1b}
+
+/* PRINT / DERIVACIÓN */
+.print-sheet{background:#fff;padding:24px;border:1px solid #cbd5e1;border-radius:12px}
+.print-header{display:flex;justify-content:space-between;border-bottom:2px solid #174ea6;padding-bottom:12px;margin-bottom:16px}
+.print-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px}
+.print-box{border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px}
+.print-box h4{margin:0 0 6px;color:#174ea6;font-size:13px;text-transform:uppercase}
+@media print{
+ body *{visibility:hidden}
+ #printModal,#printModal *{visibility:visible}
+ #printModal{position:fixed;inset:0;background:#fff;padding:0}
+ .no-print{display:none !important}
+}
+
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1050px){.grid{grid-template-columns:1fr 1fr}aside{width:210px}}
+@media(max-width:760px){
+ header{padding:0 12px}.layout{display:block}
+ aside{width:100%;padding:7px;position:sticky;top:72px;z-index:15}
+ nav{display:flex;overflow:auto}nav button{min-width:max-content}.navtitle{display:none}
+ main{padding:14px}.stats,.grid,.grid2{grid-template-columns:1fr 1fr}
+ .formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}
+ .checkgrid{grid-template-columns:1fr 1fr}.clock{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="login" id="login">
+ <div class="login-card">
+  <div class="logo">🏥</div><h1>CARE</h1><p>Sistema Integral de Gestión Geriátrica</p>
+  <input id="loginEmail" type="email" placeholder="Correo electrónico" autocomplete="username" onkeydown="if(event.key==='Enter')enterApp()">
+  <input id="loginPass" type="password" placeholder="Contraseña de tu cuenta" autocomplete="current-password" onkeydown="if(event.key==='Enter')enterApp()">
+  <p id="loginError" role="alert" style="display:none;color:#b91c1c;font-size:13px;margin:0 0 12px">No se pudo iniciar sesión. Revisá tu correo y contraseña.</p>
+  <button class="enter" id="loginButton" onclick="enterApp()">Ingresar al sistema</button>
+  <small style="display:block;margin-top:13px;color:#98a2b3">Acceso individual · Cuenta protegida por Supabase</small>
+ </div>
+</div>
+
+<div class="app" id="app">
+<header>
+ <div class="brand">
+  <div class="brand-icon">🏥</div>
+  <div><strong>CARE · Gestión Geriátrica</strong><small id="roleBadgeHeader">Pacientes · Enfermería · Personal · Asistencia</small></div>
+ </div>
+ <div class="userbar">
+  <span class="clock" id="clock"></span>
+  <span class="badge graybadge" id="cloudStatus">Sin conexión</span>
+  <button class="btn secondary sm" onclick="exportBackup()">💾 Respaldo</button>
+  <button class="btn gray sm" onclick="logout()">Salir</button>
+ </div>
+</header>
+
+<div class="layout">
+<aside><nav>
+ <div class="navtitle">Principal</div>
+ <button class="active" onclick="showView('dashboard',this)">🏠 Inicio</button>
+ <button onclick="showView('patients',this)">👵 Pacientes / Expedientes</button>
+ <button onclick="showView('admissions',this)">📥 Ingresos / Egresos</button>
+ <button onclick="showView('rooms',this)">🛏️ Habitaciones</button>
+ <div class="navtitle">Asistencial</div>
+ <button onclick="showView('nursing',this)">🩺 Enfermería / Signos</button>
+ <button onclick="showView('care',this)">🤝 Cuidados diarios</button>
+ <button onclick="showView('medications',this)">💊 Medicación y Tomas</button>
+ <button onclick="showView('incidents',this)">⚠️ Incidentes / Novedades</button>
+ <button onclick="showView('appointments',this)">📅 Turnos / Consultas</button>
+ <div class="navtitle">Administración</div>
+ <button onclick="showView('staff',this)">👥 Personal</button>
+ <button onclick="showView('asistenciaEnfermeria',this)">🩺 Planilla Enfermería</button>
+ <button onclick="showView('asistentes',this)">🤝 Planilla Asistencia</button>
+ <button onclick="showView('contacts',this)">👨‍👩‍👧 Familia / Contactos</button>
+ <button onclick="showView('doctor',this)">👨‍⚕️ Doctores</button>
+ <button onclick="showView('medicalReports',this)">🗂️ Informes médicos</button>
+ <button onclick="showView('belongings',this)">🧳 Pertenencias</button>
+ <button onclick="showView('reports',this)">📋 Reportes</button>
+ <button onclick="showView('backup',this)">💾 Datos / Respaldo</button>
+</nav></aside>
+
+<main>
+<!-- PANEL GENERAL -->
+<section id="dashboard" class="view active">
+ <div class="page-title">
+  <div><h2>Panel general</h2><p>Centro de control y guardia activa de CARE.</p></div>
+  <div class="actions">
+   <button class="btn" onclick="openPatient()">＋ Nuevo paciente</button>
+   <button class="btn green" onclick="openNursing()">＋ Signos vitales</button>
+   <button class="btn purple" onclick="openMedication()">💊 Medicación</button>
+  </div>
+ </div>
+
+ <div class="stats">
+  <div class="stat"><b id="sPatients">0</b><span>Residentes activos</span></div>
+  <div class="stat"><b id="sBeds">0</b><span>Camas totales</span></div>
+  <div class="stat"><b id="sFree">0</b><span>Camas libres</span></div>
+  <div class="stat"><b id="sStaff">0</b><span>Personal</span></div>
+  <div class="stat"><b id="sNursing">0</b><span>Controles</span></div>
+  <div class="stat"><b id="sAlerts">0</b><span>Alertas 24h</span></div>
+ </div>
+
+ <!-- LECTURA AUTOMÁTICA DE GUARDIA DEL DÍA -->
+ <div class="card" style="margin-bottom:15px;border-left:5px solid #174ea6">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+   <div>
+    <h3 style="margin:0">📋 Guardia Activa del Día (Lectura automática de planillas)</h3>
+    <small class="muted">Se actualiza automáticamente según lo cargado en Planilla de Enfermería y Planilla de Asistencia.</small>
+   </div>
+   <div style="display:flex;align-items:center;gap:8px">
+    <label class="subtle"><b>Consultar fecha:</b></label>
+    <input type="date" id="dashDutyDate" onchange="renderDashboard()">
+   </div>
+  </div>
+  <div id="dashDutySummary"></div>
+ </div>
+
+ <div class="grid">
+  <div class="card"><h3>📌 Alertas y novedades</h3><p class="subtle">Alertas médicas, signos fuera de rango y avisos de las últimas 24 hs.</p><div id="dashAlerts"></div></div>
+  <div class="card"><h3>🩺 Últimos signos vitales</h3><p class="subtle">Controles registrados en las últimas 24 horas.</p><div id="dashNursing" class="mini-list"></div></div>
+  <div class="card"><h3>🎂 Cumpleaños y Actividad</h3><p class="subtle">Próximos cumpleaños de residentes y actividad reciente.</p><div id="dashBirthdays"></div><div id="dashActivity" class="mini-list"></div></div>
+ </div>
+
+ <div class="card" style="margin-top:15px"><h3>Accesos rápidos</h3><div class="actions">
+  <button class="btn secondary" onclick="openAdmission()">📥 Registrar ingreso / movimiento</button>
+  <button class="btn secondary" onclick="openCare()">🤝 Registrar cuidado diario</button>
+  <button class="btn secondary" onclick="openShiftReport()">📝 Reporte general de turno</button>
+  <button class="btn secondary" onclick="openIncident()">⚠️ Registrar novedad</button>
+ </div></div>
+</section>
+
+<!-- PACIENTES -->
+<section id="patients" class="view">
+ <div class="page-title"><div><h2>👵 Expedientes de pacientes</h2><p>Historia administrativa, clínica y ficha de derivación de cada residente.</p></div><button class="btn" onclick="openPatient()">＋ Agregar paciente</button></div>
+ <div class="searchbar"><input id="patientSearch" placeholder="🔎 Buscar por nombre, DNI, habitación o cama..." oninput="renderPatients()"><select id="patientStatusFilter" onchange="renderPatients()"><option value="">Todos los estados</option><option>Internado</option><option>Alta</option><option>En evaluación</option></select></div>
+ <div id="patientTable"></div>
+</section>
+
+<!-- INGRESOS / EGRESOS -->
+<section id="admissions" class="view">
+ <div class="page-title"><div><h2>📥 Ingresos y egresos</h2><p>Admisión, traslados, altas y movimientos del residente.</p></div><div class="actions"><button class="btn" onclick="openPatient()">＋ Alta de nuevo residente</button><button class="btn secondary" onclick="openAdmission()">＋ Registrar movimiento</button></div></div>
+ <div class="grid2">
+ <div class="card"><h3>① Ingresar un paciente nuevo</h3><p>Para una persona que todavía no tiene expediente en CARE. Complete sus datos personales, clínicos, alergias, comunicación, contactos y ubicación.</p><button class="btn" onclick="openPatient()">＋ Abrir ficha de ingreso nuevo</button></div>
+ <div class="card"><h3>② Pacientes ya registrados</h3><p>Busque residentes existentes para registrar un reingreso, traslado, salida temporal o alta. No se crea un expediente duplicado.</p><div class="searchbar"><input id="adExistingSearch" placeholder="🔎 Buscar residente existente..." oninput="renderExistingAdmissionsPatients()"></div><div id="adExistingPatients"></div></div>
+</div>
+<div class="grid2" style="margin-top:14px"><div class="card"><h3>Movimientos de ingreso y egreso</h3><div id="admissionTable"></div></div><div class="card"><h3>Resumen</h3><div class="mini-list"><div class="mini-row"><span>Ingresos</span><b id="adIn">0</b></div><div class="mini-row"><span>Altas</span><b id="adOut">0</b></div><div class="mini-row"><span>Traslados</span><b id="adTransfer">0</b></div></div></div></div>
+</section>
+
+<!-- HABITACIONES -->
+<section id="rooms" class="view">
+ <div class="page-title"><div><h2>🛏️ Habitaciones y camas</h2><p>Estado de ocupación del establecimiento.</p></div></div>
+ <div class="searchbar"><input id="roomSearch" placeholder="🔎 Buscar habitación o paciente..." oninput="renderRooms()"></div><div id="roomGrid" class="rooms"></div>
+</section>
+
+<!-- ENFERMERÍA -->
+<section id="nursing" class="view">
+ <div class="page-title"><div><h2>🩺 Enfermería y signos vitales</h2><p>Controles, observaciones y cuidados de enfermería.</p></div><button class="btn green" onclick="openNursing()">＋ Cargar control</button></div>
+ <div class="grid">
+  <div class="card"><h3>Controles de hoy</h3><div id="todayNursing"></div></div>
+  <div class="card"><h3>Indicadores</h3><div class="mini-list">
+   <div class="mini-row"><span>Controles registrados</span><b id="nCount">0</b></div>
+   <div class="mini-row"><span>PA elevada (≥160/100)</span><b id="bpAlerts">0</b></div>
+   <div class="mini-row"><span>Temperatura ≥ 37.8 °C</span><b id="tempAlerts">0</b></div>
+   <div class="mini-row"><span>Saturación O₂ &lt; 92%</span><b id="o2Alerts">0</b></div>
+  </div></div>
+  <div class="card"><h3>Signos y cuidados incluidos</h3><div class="checkgrid">
+   <div class="check">☑ Presión arterial</div><div class="check">☑ Frec. cardíaca</div><div class="check">☑ Frec. respiratoria</div>
+   <div class="check">☑ Temperatura</div><div class="check">☑ Saturación O₂</div><div class="check">☑ Glucemia</div>
+   <div class="check">☑ Peso</div><div class="check">☑ Alimentación</div><div class="check">☑ Hidratación</div>
+   <div class="check">☑ Catarsis</div><div class="check">☑ Diuresis</div><div class="check">☑ Higiene</div>
+   <div class="check">☑ Movilidad</div><div class="check">☑ Piel / heridas</div><div class="check">☑ Dolor</div>
+  </div></div>
+ </div>
+ <div class="card" style="margin-top:15px"><h3>📝 Reporte general del turno</h3><p class="muted">Resumen del turno completo, novedades, pendientes y comunicación al siguiente equipo.</p><button class="btn green" onclick="openShiftReport()">＋ Crear reporte general del turno</button><div id="shiftReportTable" style="margin-top:12px"></div></div>
+ <div class="card" style="margin-top:15px"><h3>Historial de enfermería</h3><div id="nursingTable"></div></div>
+</section>
+
+<!-- CUIDADOS DIARIOS -->
+<section id="care" class="view">
+ <div class="page-title"><div><h2>🤝 Cuidados diarios</h2><p>Registro de actividades, higiene, alimentación, movilidad y descanso.</p></div><button class="btn" onclick="openCare()">＋ Registrar cuidado</button></div>
+ <div class="card"><div id="careTable"></div></div>
+</section>
+
+<!-- MEDICACIÓN Y TOMAS DIARIAS (MAR) -->
+<section id="medications" class="view">
+ <div class="page-title"><div><h2>💊 Medicación y Control de Tomas Diarias</h2><p>Indicaciones médicas activas y registro de administración por turno.</p></div><button class="btn" onclick="openMedication()">＋ Nueva indicación</button></div>
+ <div class="card" style="margin-bottom:15px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+   <div><h3 style="margin:0">✅ Control Diario de Administración (Hoja de Toma)</h3><small class="muted">Marcá cada toma administrada para evitar duplicaciones entre turnos.</small></div>
+   <div style="display:flex;align-items:center;gap:8px"><label class="subtle"><b>Fecha de toma:</b></label><input type="date" id="medLogDate" onchange="renderMeds()"></div>
+  </div>
+  <div id="medDailyChecklist"></div>
+ </div>
+ <div class="card"><h3>📋 Vademécum / Indicaciones cargadas</h3><div id="medTable"></div></div>
+</section>
+
+<!-- INCIDENTES -->
+<section id="incidents" class="view">
+ <div class="page-title"><div><h2>⚠️ Incidentes y novedades</h2><p>Caídas, cambios de estado, heridas, avisos y situaciones relevantes.</p></div><button class="btn" onclick="openIncident()">＋ Registrar incidente</button></div>
+ <div class="card"><div id="incidentTable"></div></div>
+</section>
+
+<!-- TURNOS -->
+<section id="appointments" class="view">
+ <div class="page-title"><div><h2>📅 Turnos y consultas</h2><p>Agenda médica, enfermería, estudios y controles externos.</p></div><button class="btn" onclick="openAppointment()">＋ Nuevo turno</button></div>
+ <div class="card"><div id="appointmentTable"></div></div>
+</section>
+
+<!-- PERSONAL -->
+<section id="staff" class="view">
+ <div class="page-title"><div><h2>👥 Personal</h2><p>Trabajadores organizados por sector, turno y contacto.</p></div><button class="btn" onclick="openStaff()">＋ Agregar personal</button></div>
+ <div class="searchbar"><input id="staffSearch" placeholder="🔎 Buscar trabajador, sector o turno..." oninput="renderStaff()"></div>
+ <div id="staffTable"></div>
+</section>
+
+<!-- PLANILLA MENSUAL ENFERMERÍA (MATRICIAL) -->
+<section id="asistenciaEnfermeria" class="view">
+ <div id="nursingStaffArea"></div>
+</section>
+
+<!-- PLANILLA MENSUAL ASISTENCIA (MATRICIAL) -->
+<section id="asistentes" class="view">
+ <div id="assistantStaffArea"></div>
+</section>
+
+<!-- CONTACTOS -->
+<section id="contacts" class="view">
+ <div class="page-title"><div><h2>👨‍👩‍👧 Familia y contactos</h2><p>Personas responsables y contactos vinculados a cada residente.</p></div><button class="btn" onclick="openContact()">＋ Agregar contacto</button></div>
+ <div class="card"><div id="contactTable"></div></div>
+</section>
+
+<!-- DOCTORES -->
+<section id="doctor" class="view">
+ <div class="page-title"><div><h2>👨‍⚕️ Doctores</h2><p>Espacio exclusivo para registrar informes, indicaciones y comunicaciones importantes del responsable médico.</p></div><button class="btn" onclick="openDoctorReport()">＋ Nuevo informe</button></div>
+ <div class="grid2">
+  <div class="card"><h3>✍️ Registrar informe del doctor</h3><p class="muted">Todo informe queda guardado y aparece automáticamente en <b>Actividad reciente</b>. Si se marca como importante o urgente, también aparece en <b>Alertas y novedades</b>.</p><button class="btn" onclick="openDoctorReport()">＋ Escribir informe</button></div>
+  <div class="card"><h3>🔔 Resumen de avisos</h3><div id="doctorSummary" class="mini-list"></div></div>
+ </div>
+ <div class="card" style="margin-top:15px"><h3>📋 Informes de doctores</h3><div id="doctorReportTable"></div></div>
+</section>
+
+<!-- INFORMES MÉDICOS -->
+<section id="medicalReports" class="view">
+ <div class="page-title"><div><h2>🗂️ Informes médicos</h2><p>Informes de doctores, controles y reportes generales de enfermería, organizados por fecha y turno.</p></div><button class="btn secondary" onclick="exportMedicalReports()">⬇ Exportar informes</button></div>
+ <div class="searchbar"><input id="medicalSearch" placeholder="🔎 Buscar por fecha, mes, turno, profesional o texto..." oninput="renderMedicalReports()"><select id="medicalShiftFilter" onchange="renderMedicalReports()"><option value="">Todos los turnos</option><option>Mañana</option><option>Tarde</option><option>Noche</option><option>Guardia</option></select></div><div id="medicalReportsTable"></div>
+</section>
+
+<!-- PERTENENCIAS -->
+<section id="belongings" class="view"><div class="page-title"><div><h2>🧳 Pertenencias de residentes</h2><p>Inventario al ingreso, movimientos, evidencia fotográfica y devolución al egreso.</p></div><button class="btn" onclick="openBelongings()">＋ Registrar pertenencias</button></div><div class="searchbar"><input id="belongingsSearch" placeholder="🔎 Buscar residente, objeto, marca o estado..." oninput="renderBelongings()"></div><div class="card"><div id="belongingsTable"></div></div></section>
+
+<!-- REPORTES -->
+<section id="reports" class="view">
+ <div class="page-title"><div><h2>📋 Reportes</h2><p>Resumen de la información guardada en CARE.</p></div><button class="btn secondary" onclick="exportBackup()">💾 Exportar respaldo</button></div>
+ <div class="grid">
+  <div class="card"><h3>Pacientes</h3><div class="kpi" id="rPatients">0</div></div><div class="card"><h3>Personal</h3><div class="kpi" id="rStaff">0</div></div><div class="card"><h3>Controles</h3><div class="kpi" id="rNursing">0</div></div>
+ </div>
+ <div class="grid2" style="margin-top:15px"><div class="card"><h3>Pacientes por estado</h3><div id="statusReport"></div></div><div class="card"><h3>Personal por sector</h3><div id="sectorReport"></div></div></div>
+</section>
+
+<!-- RESPALDO -->
+<section id="backup" class="view">
+ <div class="page-title"><div><h2>💾 Datos y respaldo</h2><p>Los registros se almacenan en el navegador y en Supabase. También podés descargar y restaurar una copia.</p></div></div>
+ <div class="grid2">
+  <div class="card"><h3>Exportar</h3><p class="muted">Descarga todos los datos de CARE en un archivo JSON.</p><button class="btn" onclick="exportBackup()">💾 Descargar respaldo completo</button></div>
+  <div class="card"><h3>Restaurar</h3><p class="muted">Seleccioná un respaldo JSON previamente descargado.</p><input id="restoreFile" type="file" accept=".json" onchange="restoreBackup(event)"></div>
+ </div>
+ <div class="card" style="margin-top:15px"><h3>Estado de almacenamiento</h3><div id="storageInfo"></div></div>
+</section>
+</main></div></div>
+
+<!-- ================= MODALES ================= -->
+<!-- PACIENTE -->
+<div class="modal" id="patientModal"><div class="modal-box">
+<div class="modal-head"><h2 id="patientModalTitle">Nuevo paciente</h2><button class="btn red" onclick="closeModal('patientModal')">Cerrar</button></div>
+<form id="patientForm"><div class="formgrid">
+<div class="section-title">Identificación</div>
+<div class="field"><label>Nombre y apellido *</label><input id="pName" required></div><div class="field"><label>DNI</label><input id="pDni"></div>
+<div class="field"><label>Sexo</label><select id="pSex"><option>Sin completar</option><option>Femenino</option><option>Masculino</option><option>Otro</option></select></div>
+<div class="field"><label>Fecha de nacimiento</label><input id="pBirth" type="date"></div>
+<div class="field"><label>Estado</label><select id="pStatus"><option>Internado</option><option>En evaluación</option><option>Alta</option></select></div>
+<div class="field"><label>Fecha de ingreso</label><input id="pAdmission" type="date"></div>
+<div class="field"><label>Habitación</label><select id="pRoom"></select></div><div class="field"><label>Cama</label><select id="pBed"></select></div>
+<div class="section-title">Información clínica y asistencial</div>
+<div class="field"><label>¿Puede comunicarse verbalmente?</label><select id="pCanSpeak"><option>Sin evaluar</option><option>Sí</option><option>No</option><option>Parcialmente</option><option>Usa comunicación alternativa</option></select></div>
+<div class="field"><label>Orientación / cognición</label><select id="pCognition"><option>Sin evaluar</option><option>Orientado/a</option><option>Desorientación parcial</option><option>Desorientación</option><option>Deterioro cognitivo informado</option></select></div>
+<div class="field"><label>Audición</label><input id="pHearing" placeholder="Normal, audífono, dificultad..."></div><div class="field"><label>Visión</label><input id="pVision" placeholder="Normal, lentes, dificultad..."></div>
+<div class="field"><label>Prótesis / ayudas técnicas</label><input id="pAids" placeholder="Audífono, lentes, prótesis, andador..."></div><div class="field"><label>Riesgos conocidos</label><input id="pRisks" placeholder="Caídas, úlceras, aspiración..."></div>
+<div class="field"><label>Contacto de emergencia</label><input id="pEmergency" placeholder="Nombre y teléfono"></div><div class="field"><label>Persona responsable / tutor</label><input id="pGuardian"></div><div class="field"><label>Última actualización clínica</label><input id="pClinicalUpdate" type="date"></div>
+<div class="field"><label>Diagnósticos / antecedentes</label><textarea id="pHealth" rows="3"></textarea></div>
+<div class="field"><label>Alergias</label><textarea id="pAllergy" rows="3"></textarea></div>
+<div class="field"><label>Obra social / cobertura</label><input id="pInsurance"></div>
+<div class="field"><label>Médico / profesional de referencia</label><input id="pDoctor"></div>
+<div class="field"><label>Dependencia / movilidad</label><select id="pMobility"><option>Sin completar</option><option>Independiente</option><option>Con asistencia</option><option>En silla de ruedas</option><option>En cama</option></select></div>
+<div class="field"><label>Alimentación / dieta</label><input id="pDiet"></div>
+<div class="field full"><label>Observaciones generales</label><textarea id="pNotes" rows="4"></textarea></div>
+</div><div class="actions" style="justify-content:flex-end;margin-top:15px">
+<button type="button" class="btn gray" onclick="closeModal('patientModal')">Cancelar</button><button type="button" id="deletePatientBtn" class="btn red" onclick="deletePatient()" style="display:none">Eliminar</button><button class="btn">Guardar expediente</button>
+</div></form></div></div>
+
+<!-- FICHA CLÍNICA / DERIVACIÓN IMPRIMIBLE -->
+<div class="modal" id="printModal"><div class="modal-box">
+<div class="modal-head no-print"><h2>📄 Ficha Clínica / Hoja de Derivación</h2><div class="actions"><button class="btn green" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button><button class="btn red" onclick="closeModal('printModal')">Cerrar</button></div></div>
+<div id="printContent"></div>
+</div></div>
+
+<!-- MODAL EDITAR CELDA DE PLANILLA -->
+<div class="modal" id="rosterCellModal"><div class="modal-box" style="width:min(440px,95%)">
+<div class="modal-head"><h2 id="rcTitle">Asignar turno</h2><button class="btn red sm" onclick="closeModal('rosterCellModal')">Cerrar</button></div>
+<p class="muted" id="rcSubtitle" style="margin-top:0"></p>
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+ <label for="rcVigiaCheck" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:#1e40af;margin:0">
+  <input type="checkbox" id="rcVigiaCheck" style="width:18px;height:18px;accent-color:#1d4ed8">
+  <span>👁️ Es Vigía en este turno (letra en azul)</span>
+ </label>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+ <button type="button" class="btn gray" onclick="setRosterCellCode('M')"><b>M</b> · Mañana</button>
+ <button type="button" class="btn gray" onclick="setRosterCellCode('T')"><b>T</b> · Tarde</button>
+ <button type="button" class="btn gray" onclick="setRosterCellCode('N')"><b>N</b> · Noche</button>
+ <button type="button" class="btn red" onclick="setRosterCellCode('F')"><b>F</b> · Franco</button>
+ <button type="button" class="btn orange" style="background:#ffff00;color:#0f172a;border:1px solid #eab308" onclick="setRosterCellCode('V', false)"><b>V</b> · Vacaciones</button>
+ <button type="button" class="btn red" onclick="setRosterCellCode('E')"><b>E</b> · Licencia/Enf.</button>
+</div>
+<div class="field"><label>O escribir código personalizado / dejar vacío:</label><div style="display:flex;gap:8px"><input id="rcCustomInput" maxlength="4" style="text-transform:uppercase;flex:1" placeholder="Ej. M, T, N, F, V"><button type="button" class="btn" onclick="setRosterCellCode(document.getElementById('rcCustomInput').value)">Aplicar</button><button type="button" class="btn gray" onclick="setRosterCellCode('', false)">Limpiar</button></div></div>
+</div></div>
+
+<!-- ENFERMERIA -->
+<div class="modal" id="nursingModal"><div class="modal-box">
+<div class="modal-head"><h2>🩺 Registro de enfermería · Signos vitales</h2><button class="btn red" onclick="closeModal('nursingModal')">Cerrar</button></div>
+<form id="nursingForm"><div class="formgrid">
+<div class="field"><label>Paciente *</label><select id="nPatient" required></select></div><div class="field"><label>Fecha y hora</label><input id="nDate" type="datetime-local"></div><div class="field"><label>Turno</label><select id="nShift"><option>Mañana</option><option>Tarde</option><option>Noche</option><option>Guardia</option></select></div>
+<div class="section-title">Signos vitales</div>
+<div class="field"><label>Presión arterial (mmHg)</label><input id="nBP" placeholder="Ej. 120/80"></div>
+<div class="field"><label>Frecuencia cardíaca (lpm)</label><input id="nPulse" type="number" min="0"></div>
+<div class="field"><label>Frecuencia respiratoria (rpm)</label><input id="nResp" type="number" min="0" placeholder="Respiraciones por minuto"></div>
+<div class="field"><label>Temperatura (°C)</label><input id="nTemp" type="number" step="0.1"></div>
+<div class="field"><label>Saturación O₂ (%)</label><input id="nO2" type="number" min="0" max="100"></div>
+<div class="field"><label>Glucemia (mg/dL)</label><input id="nGlucose" type="number"></div>
+<div class="field"><label>Peso (kg)</label><input id="nWeight" type="number" step="0.1"></div>
+<div class="field"><label>Dolor (0-10)</label><input id="nPain" type="number" min="0" max="10"></div>
+<div class="section-title">Cuidados y observaciones</div>
+<div class="field"><label>Alimentación</label><select id="nFood"><option>Sin registrar</option><option>Completa</option><option>Parcial</option><option>No ingirió</option><option>Asistida</option></select></div>
+<div class="field"><label>Hidratación</label><select id="nHydration"><option>Sin registrar</option><option>Adecuada</option><option>Parcial</option><option>Baja</option></select></div>
+<div class="field"><label>Catarsis</label><select id="nBowel"><option>Sin registrar</option><option>Normal</option><option>Presente</option><option>Ausente</option><option>Diarrea</option><option>Estreñimiento</option></select></div>
+<div class="field"><label>Diuresis</label><select id="nUrine"><option>Sin registrar</option><option>Normal</option><option>Disminuida</option><option>Aumentada</option></select></div>
+<div class="field"><label>Higiene</label><select id="nHygiene"><option>Sin registrar</option><option>Realizada</option><option>Asistida</option><option>Pendiente</option></select></div>
+<div class="field"><label>Movilidad</label><select id="nMobility"><option>Sin registrar</option><option>Independiente</option><option>Con asistencia</option><option>En cama</option><option>En silla de ruedas</option></select></div>
+<div class="field"><label>Piel / heridas</label><select id="nSkin"><option>Sin registrar</option><option>Íntegra</option><option>Enrojecimiento</option><option>Herida</option><option>Lesión</option></select></div>
+<div class="field"><label>Medicaciones administradas</label><input id="nMeds"></div>
+<div class="field"><label>Enfermero/a</label><input id="nStaff"></div>
+<div class="field full"><label>Observaciones de enfermería</label><textarea id="nObs" rows="4"></textarea></div>
+</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('nursingModal')">Cancelar</button><button class="btn green">Guardar control</button></div></form>
+</div></div>
+
+<!-- CUIDADOS -->
+<div class="modal" id="careModal"><div class="modal-box">
+<div class="modal-head"><h2>🤝 Registro de cuidados diarios</h2><button class="btn red" onclick="closeModal('careModal')">Cerrar</button></div>
+<form id="careForm"><div class="formgrid">
+<div class="field"><label>Paciente *</label><select id="cPatient" required></select></div><div class="field"><label>Fecha</label><input id="cDate" type="date"></div>
+<div class="field"><label>Baño / higiene</label><select id="cBath"><option>Sin registrar</option><option>Realizado</option><option>Asistido</option><option>Pendiente</option></select></div>
+<div class="field"><label>Vestimenta</label><select id="cDress"><option>Sin registrar</option><option>Independiente</option><option>Asistida</option></select></div>
+<div class="field"><label>Alimentación</label><select id="cFood"><option>Sin registrar</option><option>Independiente</option><option>Asistida</option><option>Rechazó</option></select></div>
+<div class="field"><label>Movilización</label><select id="cMove"><option>Sin registrar</option><option>Independiente</option><option>Asistida</option><option>Traslado</option></select></div>
+<div class="field"><label>Descanso / sueño</label><select id="cSleep"><option>Sin registrar</option><option>Adecuado</option><option>Interrumpido</option><option>Sin descanso</option></select></div>
+<div class="field"><label>Actividad / recreación</label><input id="cActivity"></div>
+<div class="field"><label>Personal</label><input id="cStaff"></div>
+<div class="field full"><label>Observaciones</label><textarea id="cObs" rows="4"></textarea></div>
+</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('careModal')">Cancelar</button><button class="btn">Guardar cuidado</button></div></form>
+</div></div>
+
+<!-- PERSONAL -->
+<div class="modal" id="staffModal"><div class="modal-box"><div class="modal-head"><h2 id="staffModalTitle">👥 Personal</h2><button class="btn red" onclick="closeModal('staffModal')">Cerrar</button></div>
+<form id="staffForm"><div class="formgrid"><div class="field"><label>Nombre y apellido *</label><input id="stName" required></div>
+<div class="field"><label>Sector</label><select id="stSector"><option>Asistencia</option><option>Asistencia Reemplazo</option><option>Cocina</option><option>Limpieza</option><option>Lavadero</option><option>Mantenimiento</option><option>Administración</option><option>Enfermería</option><option>Puerta</option><option>Traslado</option><option>Médico</option><option>Otro</option></select></div>
+<div class="field"><label>Turno</label><input id="stShift" placeholder="Mañana / Tarde / Noche"></div><div class="field"><label>Teléfono</label><input id="stPhone"></div>
+<div class="field"><label>DNI / legajo</label><input id="stDni"></div><div class="field"><label>Estado</label><select id="stStatus"><option>Activo</option><option>Licencia</option><option>Inactivo</option></select></div>
+<div class="field full"><label>Observaciones</label><textarea id="stNotes"></textarea></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('staffModal')">Cancelar</button><button type="button" id="deleteStaffBtn" class="btn red" onclick="deleteStaff()" style="display:none">Eliminar expediente</button><button class="btn">Guardar personal</button></div></form></div></div>
+
+<!-- MEDICACION -->
+<div class="modal" id="medModal"><div class="modal-box"><div class="modal-head"><h2>💊 Indicación de medicación</h2><button class="btn red" onclick="closeModal('medModal')">Cerrar</button></div>
+<form id="medForm"><div class="formgrid"><div class="field"><label>Paciente *</label><select id="mPatient" required></select></div><div class="field"><label>Medicamento *</label><input id="mDrug" required></div>
+<div class="field"><label>Dosis</label><input id="mDose"></div><div class="field"><label>Horario</label><input id="mTime" placeholder="08:00 / 20:00"></div>
+<div class="field"><label>Vía</label><select id="mRoute"><option>Oral</option><option>Subcutánea</option><option>Intramuscular</option><option>Intravenosa</option><option>Tópica</option><option>Otra</option></select></div>
+<div class="field"><label>Indicado por</label><input id="mDoctor"></div><div class="field"><label>Fecha de inicio</label><input id="mStart" type="date"></div>
+<div class="field"><label>Estado</label><select id="mStatus"><option>Activa</option><option>Suspendida</option><option>Finalizada</option></select></div>
+<div class="field full"><label>Observaciones</label><textarea id="mObs"></textarea></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('medModal')">Cancelar</button><button class="btn">Guardar indicación</button></div></form></div></div>
+
+<!-- INCIDENTE -->
+<div class="modal" id="incidentModal"><div class="modal-box"><div class="modal-head"><h2>⚠️ Incidente / novedad</h2><button class="btn red" onclick="closeModal('incidentModal')">Cerrar</button></div>
+<form id="incidentForm"><div class="formgrid"><div class="field"><label>Paciente *</label><select id="iPatient" required></select></div><div class="field"><label>Fecha y hora</label><input id="iDate" type="datetime-local"></div>
+<div class="field"><label>Tipo</label><select id="iType"><option>Caída</option><option>Cambio de estado</option><option>Herida</option><option>Conducta</option><option>Traslado</option><option>Aviso a familiar</option><option>Otro</option></select></div>
+<div class="field"><label>Prioridad</label><select id="iPriority"><option>Normal</option><option>Importante</option><option>Urgente</option></select></div>
+<div class="field full"><label>Detalle *</label><textarea id="iDetail" rows="5" required></textarea></div><div class="field"><label>Registrado por</label><input id="iStaff"></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('incidentModal')">Cancelar</button><button class="btn">Guardar incidente</button></div></form></div></div>
+
+<!-- TURNO -->
+<div class="modal" id="appointmentModal"><div class="modal-box"><div class="modal-head"><h2>📅 Nuevo turno / consulta</h2><button class="btn red" onclick="closeModal('appointmentModal')">Cerrar</button></div>
+<form id="appointmentForm"><div class="formgrid"><div class="field"><label>Paciente *</label><select id="apPatient" required></select></div>
+<div class="field"><label>Fecha y hora</label><input id="apDate" type="datetime-local"></div><div class="field"><label>Profesional / servicio</label><input id="apProfessional"></div>
+<div class="field"><label>Tipo</label><select id="apType"><option>Consulta médica</option><option>Enfermería</option><option>Estudio</option><option>Control</option><option>Odontología</option><option>Fisioterapia</option><option>Otra</option></select></div>
+<div class="field"><label>Estado</label><select id="apStatus"><option>Programado</option><option>Realizado</option><option>Cancelado</option></select></div><div class="field"><label>Destino / lugar</label><input id="apPlace"></div>
+<div class="field full"><label>Notas</label><textarea id="apNotes"></textarea></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('appointmentModal')">Cancelar</button><button class="btn">Guardar turno</button></div></form></div></div>
+
+<!-- CONTACTO -->
+<div class="modal" id="contactModal"><div class="modal-box"><div class="modal-head"><h2>👨‍👩‍👧 Contacto familiar</h2><button class="btn red" onclick="closeModal('contactModal')">Cerrar</button></div>
+<form id="contactForm"><div class="formgrid"><div class="field"><label>Paciente *</label><select id="coPatient" required></select></div><div class="field"><label>Nombre *</label><input id="coName" required></div>
+<div class="field"><label>Vínculo</label><input id="coRelation" placeholder="Hijo/a, hermano/a, tutor..."></div><div class="field"><label>Teléfono</label><input id="coPhone"></div>
+<div class="field"><label>Email</label><input id="coEmail" type="email"></div><div class="field"><label>Responsable principal</label><select id="coMain"><option>No</option><option>Sí</option></select></div>
+<div class="field full"><label>Observaciones</label><textarea id="coNotes"></textarea></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('contactModal')">Cancelar</button><button class="btn">Guardar contacto</button></div></form></div></div>
+
+<!-- INGRESO -->
+<div class="modal" id="admissionModal"><div class="modal-box"><div class="modal-head"><h2>📥 Movimiento de paciente</h2><button class="btn red" onclick="closeModal('admissionModal')">Cerrar</button></div>
+<form id="admissionForm"><div class="formgrid"><div class="field"><label>Paciente *</label><select id="adPatient" required></select></div><div class="field"><label>Fecha y hora</label><input id="adDate" type="datetime-local"></div>
+<div class="field"><label>Tipo de movimiento</label><select id="adType"><option>Ingreso</option><option>Alta</option><option>Traslado interno</option><option>Reingreso</option><option>Salida temporal</option></select></div>
+<div class="field"><label>Origen / destino</label><input id="adPlace"></div><div class="field full"><label>Motivo / observaciones</label><textarea id="adNotes"></textarea></div><div class="field"><label>Registrado por</label><input id="adStaff"></div></div>
+<div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('admissionModal')">Cancelar</button><button class="btn">Guardar movimiento</button></div></form></div></div>
+
+<!-- AREA DEL DOCTOR -->
+<div class="modal" id="doctorModal"><div class="modal-box"><div class="modal-head"><h2>👨‍⚕️ Informe de doctores</h2><button class="btn red" onclick="closeModal('doctorModal')">Cerrar</button></div>
+<form id="doctorForm"><div class="formgrid">
+<div class="field"><label>Fecha y hora</label><input id="dDate" type="datetime-local"></div><div class="field"><label>Turno</label><select id="dShift"><option>Mañana</option><option>Tarde</option><option>Noche</option><option>Guardia</option></select></div>
+<div class="field"><label>Prioridad *</label><select id="dPriority" required><option>Normal</option><option>Importante</option><option>Urgente</option></select></div>
+<div class="field"><label>Tipo de registro</label><select id="dType"><option>Informe médico</option><option>Indicación</option><option>Comunicación al personal</option><option>Novedad general</option><option>Seguimiento</option><option>Otro</option></select></div>
+<div class="field"><label>Paciente relacionado</label><select id="dPatient"><option value="">Sin paciente específico</option></select></div>
+<div class="field full"><label>Informe / indicación *</label><textarea id="dDetail" rows="7" required placeholder="Escriba aquí el informe, indicación o comunicación..."></textarea></div>
+<div class="field"><label>Doctor / responsable</label><input id="dDoctor" placeholder="Nombre del doctor"></div>
+</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('doctorModal')">Cancelar</button><button class="btn">Guardar y notificar</button></div></form></div></div>
+
+<!-- REPORTE TURNO -->
+<div class="modal" id="shiftModal"><div class="modal-box"><div class="modal-head"><h2>📝 Reporte general de enfermería</h2><button class="btn red" onclick="closeModal('shiftModal')">Cerrar</button></div><form id="shiftForm"><div class="formgrid">
+<div class="field"><label>Fecha</label><input id="shDate" type="date" required></div><div class="field"><label>Turno</label><select id="shShift" required><option>Mañana</option><option>Tarde</option><option>Noche</option><option>Guardia</option></select></div><div class="field"><label>Responsable del turno *</label><input id="shStaff" required></div><div class="field"><label>Prioridad</label><select id="shPriority"><option>Normal</option><option>Importante</option><option>Urgente</option></select></div>
+<div class="field full"><label>Resumen general de lo ocurrido *</label><textarea id="shSummary" rows="5" required placeholder="Estado general del turno, novedades relevantes y evolución..."></textarea></div><div class="field full"><label>Incidentes / situaciones relevantes</label><textarea id="shIncidents" rows="3"></textarea></div><div class="field full"><label>Pendientes para el próximo turno</label><textarea id="shPending" rows="3"></textarea></div><div class="field full"><label>Comunicación / observaciones finales</label><textarea id="shNotes" rows="3"></textarea></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('shiftModal')">Cancelar</button><button class="btn green">Guardar reporte del turno</button></div></form></div></div>
+
+<!-- PERTENENCIAS -->
+<div class="modal" id="belongingsModal"><div class="modal-box"><div class="modal-head"><h2>🧳 Inventario de pertenencias</h2><button class="btn red" onclick="closeModal('belongingsModal')">Cerrar</button></div><form id="belongingsForm"><div class="formgrid">
+<div class="field"><label>Residente *</label><select id="bPatient" required></select></div><div class="field"><label>Fecha y hora</label><input id="bDate" type="datetime-local" required></div><div class="field"><label>Movimiento</label><select id="bMovement"><option>Ingreso</option><option>Nuevo objeto recibido</option><option>Devolución parcial</option><option>Egreso / devolución final</option><option>Actualización de inventario</option></select></div><div class="field"><label>Estado</label><select id="bStatus"><option>En custodia</option><option>Entregado al residente</option><option>Devuelto a familia</option><option>Retirado por responsable</option><option>Extraviado / incidente</option></select></div><div class="field"><label>Registrado por *</label><input id="bStaff" required></div><div class="field"><label>Recibido / entregado a</label><input id="bReceiver"></div><div class="field full"><label>Catálogo de prendas por sector</label><div class="formgrid">
+<div class="field"><label>Sector</label><select id="bClothingSector"><option value="Ropa superior">Ropa superior</option><option value="Ropa inferior">Ropa inferior</option><option value="Ropa interior">Ropa interior</option><option value="Abrigo">Abrigo</option><option value="Calzado">Calzado</option><option value="Ropa de dormir">Ropa de dormir</option><option value="Accesorios y ayudas">Accesorios y ayudas</option><option value="Otros objetos">Otros objetos</option></select></div>
+<div class="field"><label>Prenda / objeto</label><select id="bClothingItem"><option>Remera</option><option>Camisa</option><option>Buzo</option><option>Campera</option><option>Chaleco</option><option>Pantalón</option><option>Short</option><option>Pollera</option><option>Vestido</option><option>Medias</option><option>Ropa interior</option><option>Corpiño</option><option>Pijama</option><option>Camisa de dormir</option><option>Bufanda</option><option>Gorro</option><option>Guantes</option><option>Zapatos</option><option>Zapatillas</option><option>Pantuflas</option><option>Sandalias</option><option>Silla de ruedas propia</option><option>Andador</option><option>Bastón</option><option>Lentes</option><option>Audífono</option><option>Neceser</option><option>Bolso / valija</option><option>Otro</option></select></div>
+<div class="field"><label>Cantidad</label><input id="bClothingQty" type="number" min="1" max="999" value="1"></div>
+<div class="field"><label>Color / marca / identificación</label><input id="bClothingDesc" placeholder="Ej. azul, marca, iniciales, estado"></div>
+<div class="field"><label>Agregar al inventario</label><button type="button" class="btn secondary" onclick="addClothingItem()">＋ Agregar prenda</button></div></div><p class="subtle">Podés agregar varias prendas. También podés escribir objetos que no estén en el catálogo.</p></div>
+<div class="field full"><label>Inventario detallado *</label><textarea id="bItems" rows="4" required placeholder="Las prendas agregadas aparecerán aquí. También podés completar el inventario manualmente."></textarea></div><div class="field full"><label>Marca, estado e identificación de objetos</label><textarea id="bDetails" rows="3"></textarea></div><div class="field full"><label>Fotos de evidencia (hasta 6 por registro)</label><input id="bPhotos" type="file" accept="image/*" multiple></div><div class="field full"><label>Observaciones / conformidad</label><textarea id="bNotes" rows="3"></textarea></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button type="button" class="btn gray" onclick="closeModal('belongingsModal')">Cancelar</button><button class="btn">Guardar inventario</button></div></form></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://ehpwjdvptqnijkcozohg.supabase.co/rest/v1/";
+const SUPABASE_ANON_KEY="sb_publishable_3dPz8kSRWOVGeYKB7tx9MQ_25Cb8mMq";
+const supabaseClient = window.supabase?.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+);
+let supabaseUser=null, remoteSyncTimer=null, remoteSyncBusy=false, remoteSyncPending=false;
+const KEY="care_v2_data";
+
+const baseRooms=[
+ {n:"1",private:true,beds:["Herna Kempter"]},{n:"2",private:true,beds:["Di Ricco Josefa"]},
+ {n:"3",private:false,beds:["","","Pozzi Noemi","Barale Mirian"]},
+ {n:"4",private:false,beds:["Politano Noemi","Angelino Maria","Berassi Beatris","Tubello Eligia","Tavia Maria"]},
+ {n:"5",private:false,beds:["Garcia Mercedes","Menghi Susana","Acris Delma","Mendoza Ana"]},
+ {n:"6",private:false,beds:["","Diaz Hugo","Pelli Nelso","Ferrero Oscar"]},
+ {n:"7",private:false,beds:["Rojas Hugo","","Ruffo Raul","Pierucci Raul","Franza Adalberto"]},
+ {n:"8",private:false,beds:["Peralta Rita","Cascioni Diana","","Samut Marta","Bessone Maria Lucia"]},
+ {n:"9 A",private:false,beds:["Quarcione Norma","Cerletti Irene","Perreyra Gladys"]},
+ {n:"9 B",private:true,beds:["Bessone Adelma"]},
+ {n:"10",private:false,beds:["Martinez Norma","Gatti Ruben","Marino Manuel","Mercado Alfredo"]},
+ {n:"11",private:false,beds:["","","",""]},{n:"12",private:true,beds:["Corrardi Maria Elena"]}
+];
+
+const baseStaff=[
+["Davina Baigorria","Asistencia"],["Kevin Perez","Asistencia"],["Melina Bonardi","Asistencia"],["Iñiguez Ricardo","Asistencia"],["Rodriguez Facundo","Asistencia"],["Calderon Fernanda","Asistencia"],["Gorosito Estefania","Asistencia"],["Nant Josefina","Asistencia"],["Billone Maximiliano","Asistencia"],["Larrea Jaquelin","Asistencia"],["Villarreal Thiago","Asistencia"],["Pedraza Marcela","Asistencia"],["Diaz Teresa","Asistencia"],
+["Farias Nicolas","Asistencia Reemplazo"],["Oyola Yair","Asistencia Reemplazo"],["Yanina Gigena","Asistencia Reemplazo"],["Maria Gorjon","Asistencia Reemplazo"],["Belen Lauro","Asistencia Reemplazo"],["Nicolas Quinteros","Asistencia Reemplazo"],
+["Rosalia Ramirez","Cocina"],["Brenda","Cocina"],["Estefania Cuello","Cocina"],["Veronica Acosta","Cocina"],
+["Antonela Gorosito","Limpieza"],["Luciana Gorosito","Limpieza"],["Ludmila Miranda","Limpieza"],["Micaela Guayanez","Limpieza"],
+["Veronica Mendez","Lavadero"],["Daniela Botone","Lavadero"],["Francisco Sanfelippo","Mantenimiento"],["Patricio Sanfelippo","Mantenimiento"],
+["Romina Clavel","Administración"],["Melisa Gomez","Administración"],["Carla Davico","Administración"],
+["Nadia Villarreal","Enfermería"],["Katherine Kober","Enfermería"],["Pamela Cletti","Enfermería"],["Bravi Johana","Enfermería"],["Aixa Arnolfo","Enfermería"],["Luisina Gatti","Enfermería"],
+["Milagros","Puerta"],["Silvio","Traslado"],["Jorge","Traslado"]
+];
+
+const defaultRosterAssistants = [
+ {id:"ra1",name:"Asist. Gorosito",defaultShift:"M"},
+ {id:"ra2",name:"Asis. Rodríguez",defaultShift:"M"},
+ {id:"ra3",name:"Asis. Billone",defaultShift:"M"},
+ {id:"ra4",name:"Asist. Diaz",defaultShift:"M"},
+ {id:"ra5",name:"Asist. Villarreal",defaultShift:"M"},
+ {id:"ra6",name:"Asist. Baigorria",defaultShift:"M"},
+ {id:"ra7",name:"Asist. Farias",defaultShift:"M"},
+ {id:"ra8",name:"Asist. Calderon",defaultShift:"T"},
+ {id:"ra9",name:"Asist. Iñiguez",defaultShift:"T"},
+ {id:"ra10",name:"Asist. Nant",defaultShift:"T"},
+ {id:"ra11",name:"Asist. Pedraza",defaultShift:"T"},
+ {id:"ra12",name:"Asist. Larrea",defaultShift:"T"},
+ {id:"ra13",name:"Asist. Lauro",defaultShift:"T"},
+ {id:"ra14",name:"Asist. Gorjon",defaultShift:"T"},
+ {id:"ra15",name:"Asist. Perez",defaultShift:"N"},
+ {id:"ra16",name:"Asist. Bonardi",defaultShift:"N"},
+ {id:"ra17",name:"Asist. Quinteros",defaultShift:"N"}
+];
+
+const defaultRosterNurses = [
+ {id:"rn1",name:"Enf. Nadia Villarreal",defaultShift:""},
+ {id:"rn2",name:"Enf. Katherine Kober",defaultShift:""},
+ {id:"rn3",name:"Enf. Pamela Cletti",defaultShift:""},
+ {id:"rn4",name:"Enf. Bravi Johana",defaultShift:""},
+ {id:"rn5",name:"Enf. Aixa Arnolfo",defaultShift:""},
+ {id:"rn6",name:"Enf. Luisina Gatti",defaultShift:""}
+];
+
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function uid(p){return p+"_"+Date.now()+"_"+Math.random().toString(16).slice(2,8)}
+function today(){let d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function nowLocal(){let d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";clearTimeout(window.__toast);window.__toast=setTimeout(()=>x.style.display="none",2800)}
+
+function defaultData(){
+ return {
+   version:"CARE-3.0",
+   rooms:clone(baseRooms),
+   patients:[],
+   staff:baseStaff.map((x,i)=>({id:"st"+i,name:x[0],sector:x[1],shift:"",phone:"",dni:"",status:"Activo",notes:""})),
+   nursing:[],care:[],meds:[],medLogs:[],incidents:[],appointments:[],contacts:[],admissions:[],doctorReports:[],shiftReports:[],belongings:[],activity:[],
+   monthlyAttendanceNursing:{},
+   monthlyAttendanceStaff:{},
+   rosterNurses:clone(defaultRosterNurses),
+   rosterAssistants:clone(defaultRosterAssistants)
+ };
+}
+
+let data=loadData();
+
+function normalizeData(rawObj){
+ const base=defaultData();
+ const d=Object.assign(base,rawObj||{});
+ d.rooms=d.rooms||base.rooms;
+ d.patients=d.patients||[];
+ d.staff=d.staff||base.staff;
+ d.nursing=d.nursing||[];
+ d.care=d.care||[];
+ d.meds=d.meds||[];
+ d.medLogs=d.medLogs||[];
+ d.incidents=d.incidents||[];
+ d.appointments=d.appointments||[];
+ d.contacts=d.contacts||[];
+ d.admissions=d.admissions||[];
+ d.doctorReports=d.doctorReports||[];
+ d.shiftReports=d.shiftReports||[];
+ d.belongings=d.belongings||[];
+ d.activity=d.activity||[];
+ d.monthlyAttendanceNursing=d.monthlyAttendanceNursing||{};
+ d.monthlyAttendanceStaff=d.monthlyAttendanceStaff||{};
+ d.rosterNurses=Array.isArray(d.rosterNurses)&&d.rosterNurses.length?d.rosterNurses:clone(defaultRosterNurses);
+ d.rosterAssistants=Array.isArray(d.rosterAssistants)&&d.rosterAssistants.length?d.rosterAssistants:clone(defaultRosterAssistants);
+ return d;
+}
+
+function loadData(){
+ try{
+  const raw=localStorage.getItem(KEY);
+  if(raw) return normalizeData(JSON.parse(raw));
+ }catch(e){console.warn(e)}
+ return defaultData();
+}
+
+function mergeById(localArr, remoteArr){
+ const map=new Map();
+ (remoteArr||[]).forEach(item=>{if(item&&item.id) map.set(item.id,item);});
+ (localArr||[]).forEach(item=>{if(item&&item.id) map.set(item.id,item);});
+ return [...map.values()];
+}
+
+function save(){
+ try{
+  localStorage.setItem(KEY,JSON.stringify(data));
+  if(supabaseUser){
+   remoteSyncPending=true;
+   clearTimeout(remoteSyncTimer);
+   remoteSyncTimer=setTimeout(syncDataToSupabase,700);
+  }
+  return true;
+ }catch(e){
+  console.error("CARE save error",e);
+  toast("ERROR: almacenamiento lleno. Exportá un respaldo antes de continuar.");
+  return false;
+ }
+}
+
+async function syncDataToSupabase(){
+ if(!supabaseUser || remoteSyncBusy || !remoteSyncPending) return;
+ remoteSyncBusy=true; remoteSyncPending=false;
+ const status=document.getElementById("cloudStatus");
+ if(status){status.textContent="Sincronizando...";status.className="badge warn";}
+ try{
+  const {data:latestRemote}=await supabaseClient.rpc("care_get_state");
+  if(latestRemote && Object.keys(latestRemote).length){
+   const r=normalizeData(latestRemote);
+   data.patients=mergeById(data.patients,r.patients);
+   data.staff=mergeById(data.staff,r.staff);
+   data.nursing=mergeById(data.nursing,r.nursing);
+   data.care=mergeById(data.care,r.care);
+   data.meds=mergeById(data.meds,r.meds);
+   data.medLogs=mergeById(data.medLogs,r.medLogs);
+   data.incidents=mergeById(data.incidents,r.incidents);
+   data.appointments=mergeById(data.appointments,r.appointments);
+   data.contacts=mergeById(data.contacts,r.contacts);
+   data.admissions=mergeById(data.admissions,r.admissions);
+   data.doctorReports=mergeById(data.doctorReports,r.doctorReports);
+   data.shiftReports=mergeById(data.shiftReports,r.shiftReports);
+   data.belongings=mergeById(data.belongings,r.belongings);
+   data.monthlyAttendanceNursing=Object.assign({},r.monthlyAttendanceNursing,data.monthlyAttendanceNursing);
+   data.monthlyAttendanceStaff=Object.assign({},r.monthlyAttendanceStaff,data.monthlyAttendanceStaff);
+  }
+  const {error}=await supabaseClient.rpc("care_save_state",{p_payload:data});
+  if(error) throw error;
+  localStorage.setItem(KEY,JSON.stringify(data));
+  if(status){status.textContent="Conectado y Sincronizado";status.className="badge ok";}
+ }catch(e){
+  console.error("CARE cloud sync:",e);
+  remoteSyncPending=true;
+  if(status){status.textContent="Error de sincronización";status.className="badge danger";}
+ }finally{
+  remoteSyncBusy=false;
+  if(remoteSyncPending){clearTimeout(remoteSyncTimer);remoteSyncTimer=setTimeout(syncDataToSupabase,2500);}
+ }
+}
+
+async function loadDataFromSupabase(){
+ const {data:remote,error}=await supabaseClient.rpc("care_get_state");
+ if(error) throw error;
+ if(remote && Object.keys(remote).length){
+  data=normalizeData(remote);
+  localStorage.setItem(KEY,JSON.stringify(data));
+  return true;
+ }
+ return false;
+}
+
+let careRealtimeChannel = null;
+function startRealtimeSync(){
+ if(!supabaseClient || !supabaseUser) return;
+ if(careRealtimeChannel){supabaseClient.removeChannel(careRealtimeChannel);careRealtimeChannel=null;}
+ careRealtimeChannel = supabaseClient
+  .channel("care-shared-updates")
+  .on("postgres_changes",{event:"*",schema:"public",table:"care_shared_state"},(payload)=>{
+   const remote = payload.new?.payload;
+   if(!remote || !Object.keys(remote).length || remoteSyncBusy) return;
+   data = normalizeData(remote);
+   localStorage.setItem(KEY,JSON.stringify(data));
+   renderAll();
+   const status=document.getElementById("cloudStatus");
+   if(status){status.textContent="Sincronizado en tiempo real";status.className="badge ok";}
+  })
+  .subscribe((status)=>{
+   const cloud=document.getElementById("cloudStatus");
+   if(cloud){
+    cloud.textContent = status==="SUBSCRIBED" ? "Conectado (Tiempo Real)" : "Realtime: "+status;
+    cloud.className = status==="SUBSCRIBED" ? "badge ok" : "badge warn";
+   }
+  });
+}
+
+function log(text,source="sistema",priority="Normal"){
+ const now=new Date();
+ data.activity.unshift({id:uid("a"),text,source,priority,date:now.toLocaleString("es-AR"),createdAt:now.toISOString()});
+ data.activity=data.activity.slice(0,250);
+ save();
+}
+
+function patientsAll(){
+ const map=new Map();
+ data.patients.forEach(p=>map.set(p.name,p));
+ data.rooms.forEach((r,ri)=>r.beds.forEach((name,bi)=>{
+  if(name&&!map.has(name)) map.set(name,{id:"legacy_"+name,name,roomIndex:ri,bedIndex:bi,room:r.n,bed:bi+1,status:"Internado",legacy:true});
+ }));
+ return [...map.values()];
+}
+function getPatient(id){return data.patients.find(p=>p.id===id)}
+function patientByName(name){return patientsAll().find(p=>p.name===name)}
+function fillPatientSelect(id){
+ const s=document.getElementById(id),arr=patientsAll();
+ if(!s) return;
+ s.innerHTML=`<option value="">${arr.length?"Seleccionar residente (si corresponde)":"No hay residentes cargados"}</option>`+arr.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}${p.room?` · Hab. ${esc(p.room)}`:""}</option>`).join("");
+}
+
+let currentRole=null;
+function applyRoleAccess(){
+ const navButtons=[...document.querySelectorAll("nav button")];
+ navButtons.forEach(b=>{
+  const action=b.getAttribute("onclick")||"";
+  const id=(action.match(/showView\('([^']+)'/)||[])[1];
+  const allowed={
+   administrador:null,
+   administracion:['dashboard','patients','admissions','rooms','appointments','staff','asistenciaEnfermeria','asistentes','contacts','belongings','reports','backup'],
+   enfermeria:['dashboard','patients','rooms','nursing','care','medications','incidents','appointments','asistenciaEnfermeria','asistentes'],
+   doctores:['dashboard','patients','rooms','nursing','medications','incidents','doctor','medicalReports']
+  };
+  b.style.display=(!allowed[currentRole]||allowed[currentRole].includes(id))?"":"none";
+ });
+ const roleLabel={administrador:"Administrador",administracion:"Administración",enfermeria:"Enfermería",doctores:"Médico / Doctor"}[currentRole]||"";
+ const hdr=document.getElementById("roleBadgeHeader");
+ if(hdr && roleLabel) hdr.textContent=`Rol: ${roleLabel} · ${supabaseUser?.email||""}`;
+}
+
+function showView(id,btn){
+ if(!currentRole) return;
+ const allowed={
+  administrador:null,
+  administracion:['dashboard','patients','admissions','rooms','appointments','staff','asistenciaEnfermeria','asistentes','contacts','belongings','reports','backup'],
+  enfermeria:['dashboard','patients','rooms','nursing','care','medications','incidents','appointments','asistenciaEnfermeria','asistentes'],
+  doctores:['dashboard','patients','rooms','nursing','medications','incidents','doctor','medicalReports']
+ };
+ if(allowed[currentRole] && !allowed[currentRole].includes(id)){
+  toast("Tu cuenta no tiene permiso para abrir este apartado.");
+  return;
+ }
+ document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+ const target=document.getElementById(id); if(!target) return;
+ target.classList.add("active");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn) btn.classList.add("active");
+ renderAll();
+}
+
+function openModal(id){
+ const modal=document.getElementById(id);
+ if(!modal) return;
+ modal.style.display="flex";
+ modal.classList.add("show");
+}
+function closeModal(id){
+ const modal=document.getElementById(id);
+ if(!modal) return;
+ modal.classList.remove("show");
+ modal.style.display="none";
+}
+
+async function enterApp(){
+ const email=document.getElementById("loginEmail")?.value.trim();
+ const pass=document.getElementById("loginPass")?.value.trim();
+ const error=document.getElementById("loginError");
+ const button=document.getElementById("loginButton");
+ if(!email || !pass){
+  if(error){error.textContent="Ingresá tu correo y contraseña.";error.style.display="block";}
+  return;
+ }
+ if(button){button.disabled=true;button.textContent="Verificando...";}
+ try{
+  const {data:authData,error:authError}=await supabaseClient.auth.signInWithPassword({email,password:pass});
+  if(authError) throw authError;
+  supabaseUser = authData.user;
+  const {data:profile,error:profileError}=await supabaseClient.from("care_profiles").select("role, active").eq("user_id",supabaseUser.id).single();
+  if(profileError) throw profileError;
+  if(!profile || !profile.active) throw new Error("Tu cuenta no tiene un perfil CARE activo.");
+  currentRole = profile.role;
+  await loadDataFromSupabase();
+  if(error) error.style.display="none";
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  applyRoleAccess();
+  startRealtimeSync();
+  renderAll();
+  document.getElementById("loginPass").value="";
+ }catch(e){
+  console.error(e);
+  if(error){error.textContent=e.message||"No se pudo iniciar sesión. Revisá los datos.";error.style.display="block";}
+  if(supabaseUser){await supabaseClient.auth.signOut();supabaseUser=null;currentRole=null;}
+ }finally{
+  if(button){button.disabled=false;button.textContent="Ingresar al sistema";}
+ }
+}
+
+async function logout(){
+ clearTimeout(remoteSyncTimer);
+ if(remoteSyncPending) await syncDataToSupabase();
+ await supabaseClient?.auth.signOut();
+ supabaseUser=null;currentRole=null;
+ document.getElementById("app").style.display="none";
+ document.getElementById("login").style.display="flex";
+ document.getElementById("loginPass").value="";
+ document.getElementById("loginEmail").value="";
+ document.getElementById("loginError").style.display="none";
+}
+
+async function restoreCareSession(){
+ try{
+  const {data:sessionData,error}=await supabaseClient.auth.getSession();
+  if(error) throw error;
+  if(!sessionData.session) return;
+  supabaseUser = sessionData.session.user;
+  const {data:profile,error:profileError}=await supabaseClient.from("care_profiles").select("role, active").eq("user_id",supabaseUser.id).single();
+  if(profileError) throw profileError;
+  if(!profile || !profile.active){
+   await supabaseClient.auth.signOut();
+   supabaseUser=null;currentRole=null;
+   return;
+  }
+  currentRole = profile.role;
+  await loadDataFromSupabase();
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
+  applyRoleAccess();
+  startRealtimeSync();
+  renderAll();
+ }catch(e){
+  console.error("CARE: error recuperando sesión",e);
+ }
+}
+
+/* =========================================================================
+   PLANILLAS MATRICIALES DE GUARDIA (ENFERMERÍA Y ASISTENCIA) + LECTURA DIARIA
+   ========================================================================= */
+let currentMonthNursing = today().slice(0, 7);
+let currentMonthStaff = today().slice(0, 7);
+let activeRosterEdit = null;
+
+const MONTH_NAMES_ES = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+const DAY_LETTERS_ES = ["D","L","M","M","J","V","S"];
+
+function canEditNursingSheet(){
+ if(!supabaseUser) return true;
+ const role = currentRole || "";
+ const email = (supabaseUser.email || "").toLowerCase();
+ return role === "administrador" || email.includes("luisi") || email.includes("luisina");
+}
+
+function canEditStaffSheet(){
+ if(!supabaseUser) return true;
+ const role = currentRole || "";
+ const email = (supabaseUser.email || "").toLowerCase();
+ return role === "administrador" || email.includes("romi") || email.includes("romina");
+}
+
+function getRosterCellData(type, personId, dayKey){
+ const store = type==="nursing" ? data.monthlyAttendanceNursing : data.monthlyAttendanceStaff;
+ const dayObj = store?.[dayKey];
+ if(!dayObj || !dayObj.cells || dayObj.cells[personId] === undefined) return { code:"", vigia:false };
+ const raw = dayObj.cells[personId];
+ if(raw && typeof raw === "object"){
+  return { code: String(raw.code||"").toUpperCase(), vigia: Boolean(raw.vigia) };
+ }
+ return { code: String(raw||"").toUpperCase(), vigia: false };
+}
+
+function getRosterCellCode(type, personId, dayKey){
+ return getRosterCellData(type, personId, dayKey).code;
+}
+
+function openRosterCellEditor(type, personId, personName, dayKey){
+ const canEdit = type==="nursing" ? canEditNursingSheet() : canEditStaffSheet();
+ if(!canEdit){
+  toast("No tenés permiso para modificar esta planilla (solo lectura).");
+  return;
+ }
+ activeRosterEdit = { type, personId, personName, dayKey };
+ const cell = getRosterCellData(type, personId, dayKey);
+ document.getElementById("rcTitle").textContent = `${personName}`;
+ document.getElementById("rcSubtitle").textContent = `Fecha: ${dayKey} · Actual: ${cell.code || "Vacío"}${cell.vigia ? " (Vigía)" : ""}`;
+ document.getElementById("rcCustomInput").value = cell.code;
+ const chk = document.getElementById("rcVigiaCheck");
+ if(chk) chk.checked = cell.vigia;
+ openModal("rosterCellModal");
+}
+
+function setRosterCellCode(rawCode, forceVigia=null){
+ if(!activeRosterEdit) return;
+ const { type, personId, personName, dayKey } = activeRosterEdit;
+ const code = String(rawCode||"").trim().toUpperCase();
+ const chk = document.getElementById("rcVigiaCheck");
+ let isVigia = forceVigia !== null ? Boolean(forceVigia) : Boolean(chk?.checked);
+ if(!code || code==="F" || code==="V" || code==="E") isVigia = false;
+
+ const storeKey = type==="nursing" ? "monthlyAttendanceNursing" : "monthlyAttendanceStaff";
+ data[storeKey] = data[storeKey] || {};
+ data[storeKey][dayKey] = data[storeKey][dayKey] || {};
+ data[storeKey][dayKey].cells = data[storeKey][dayKey].cells || {};
+ data[storeKey][dayKey].cells[personId] = isVigia ? { code, vigia: true } : code;
+
+ log(`Planilla ${type==="nursing"?"Enfermería":"Asistencia"}: ${personName} (${dayKey}) -> ${code||"Vacío"}${isVigia?" [VIGÍA]":""}`);
+ save();
+ closeModal("rosterCellModal");
+ renderAll();
+ toast(`Turno actualizado: ${personName} -> ${code||"Vacío"}${isVigia?" (Vigía)":""}`);
+}
+
+function addRosterPerson(type){
+ const canEdit = type==="nursing" ? canEditNursingSheet() : canEditStaffSheet();
+ if(!canEdit){ toast("No tenés permiso para agregar personal en esta planilla."); return; }
+ const label = type==="nursing" ? "enfermera/o" : "asistente";
+ const name = prompt(`Ingresá el nombre para la planilla (ej. ${type==="nursing"?"Enf. Gómez":"Asist. López"}):`);
+ if(!name || !name.trim()) return;
+ const listKey = type==="nursing" ? "rosterNurses" : "rosterAssistants";
+ data[listKey].push({ id: uid(type==="nursing"?"rn":"ra"), name: name.trim(), defaultShift:"" });
+ log(`Se agregó a ${name.trim()} en planilla de ${label}`);
+ save();
+ renderAll();
+ toast(`${name.trim()} agregado/a a la planilla.`);
+}
+
+function removeRosterPerson(type, personId, personName){
+ const canEdit = type==="nursing" ? canEditNursingSheet() : canEditStaffSheet();
+ if(!canEdit){ toast("No tenés permiso para quitar personal de esta planilla."); return; }
+ if(!confirm(`¿Quitar a "${personName}" de la planilla?`)) return;
+ const listKey = type==="nursing" ? "rosterNurses" : "rosterAssistants";
+ data[listKey] = data[listKey].filter(p=>p.id!==personId);
+ log(`Se quitó a ${personName} de la planilla`);
+ save();
+ renderAll();
+ toast(`${personName} quitado/a de la planilla.`);
+}
+
+function computeDutyForDate(dateStr){
+ const nurses = { M:[], T:[], N:[], V:[], F:[], vigias:[], other:[] };
+ const assistants = { M:[], T:[], N:[], V:[], F:[], vigias:[], other:[] };
+
+ (data.rosterNurses||[]).forEach(p=>{
+  const { code, vigia } = getRosterCellData("nursing", p.id, dateStr);
+  if(!code) return;
+  const label = vigia ? `${p.name} (Vigía)` : p.name;
+  if(vigia) nurses.vigias.push(`${p.name} (${code})`);
+  if(code==="M") nurses.M.push(label);
+  else if(code==="T") nurses.T.push(label);
+  else if(code==="N") nurses.N.push(label);
+  else if(code==="V") nurses.V.push(`${p.name} (Vacaciones)`);
+  else if(code==="F"||code==="E") nurses.F.push(`${p.name} (${code})`);
+  else nurses.other.push(`${p.name} (${code})`);
+ });
+
+ (data.rosterAssistants||[]).forEach(p=>{
+  const { code, vigia } = getRosterCellData("staff", p.id, dateStr);
+  if(!code) return;
+  const label = vigia ? `${p.name} (Vigía)` : p.name;
+  if(vigia) assistants.vigias.push(`${p.name} (${code})`);
+  if(code==="M") assistants.M.push(label);
+  else if(code==="T") assistants.T.push(label);
+  else if(code==="N") assistants.N.push(label);
+  else if(code==="V") assistants.V.push(`${p.name} (Vacaciones)`);
+  else if(code==="F"||code==="E") assistants.F.push(`${p.name} (${code})`);
+  else assistants.other.push(`${p.name} (${code})`);
+ });
+
+ return { nurses, assistants };
+}
+
+function renderDutyCardsHTML(dateStr){
+ const { nurses, assistants } = computeDutyForDate(dateStr);
+ const allVigias = [...nurses.vigias.map(x=>`🩺 ${x}`), ...assistants.vigias.map(x=>`🤝 ${x}`)];
+ const allAbsences = [...nurses.V, ...assistants.V, ...nurses.F, ...assistants.F];
+ const fmtTags = (arr, cls="") => arr.length ? arr.map(n=>`<span class="gtag ${cls}">${esc(n)}</span>`).join("") : `<span class="subtle">Sin asignar</span>`;
+
+ return `
+ <div class="guard-grid">
+  <div class="guard-box">
+   <h4>🩺 Enfermería del Día (${esc(dateStr)})</h4>
+   <div style="margin-bottom:5px"><small class="subtle"><b>Mañana (M):</b></small><div class="guard-tags">${fmtTags(nurses.M,"nurse")}</div></div>
+   <div style="margin-bottom:5px"><small class="subtle"><b>Tarde (T):</b></small><div class="guard-tags">${fmtTags(nurses.T,"nurse")}</div></div>
+   <div><small class="subtle"><b>Noche (N):</b></small><div class="guard-tags">${fmtTags(nurses.N,"nurse")}</div></div>
+  </div>
+  <div class="guard-box">
+   <h4>☀️ Asistentes · Turno Mañana (M)</h4>
+   <div class="guard-tags">${fmtTags(assistants.M)}</div>
+  </div>
+  <div class="guard-box">
+   <h4>🌤️ Asistentes · Turno Tarde (T)</h4>
+   <div class="guard-tags">${fmtTags(assistants.T)}</div>
+  </div>
+  <div class="guard-box">
+   <h4>🌙 Asistentes · Turno Noche (N)</h4>
+   <div class="guard-tags">${fmtTags(assistants.N)}</div>
+  </div>
+  <div class="guard-box vigia">
+   <h4>👁️ Vigías del Día (Letra azul)</h4>
+   <div class="guard-tags">${fmtTags(allVigias,"vigia")}</div>
+  </div>
+  <div class="guard-box">
+   <h4>🏖️ Vacaciones / Francos / Lic. (V / F / E)</h4>
+   <div class="guard-tags">${fmtTags(allAbsences,"franco")}</div>
+  </div>
+ </div>`;
+}
+
+function renderMatrixRoster(type){
+ const isNursing = type==="nursing";
+ const container = document.getElementById(isNursing ? "nursingStaffArea" : "assistantStaffArea");
+ if(!container) return;
+
+ const monthStr = isNursing ? currentMonthNursing : currentMonthStaff;
+ const canEdit = isNursing ? canEditNursingSheet() : canEditStaffSheet();
+ const people = isNursing ? (data.rosterNurses||[]) : (data.rosterAssistants||[]);
+ const [year, month] = monthStr.split("-").map(Number);
+ const daysInMonth = new Date(year, month, 0).getDate();
+ const monthTitle = MONTH_NAMES_ES[month - 1] || "";
+
+ const todayStr = today();
+ const previewDate = todayStr.startsWith(monthStr) ? todayStr : `${monthStr}-01`;
+
+ let dateHeaders = "";
+ let dayHeaders = "";
+ for(let d=1; d<=daysInMonth; d++){
+  const dt = new Date(year, month - 1, d);
+  const dow = dt.getDay();
+  const isSun = dow === 0;
+  dateHeaders += `<th class="roster-date-hdr">${d}</th>`;
+  dayHeaders += `<th class="roster-day-hdr ${isSun?"sun":""}">${DAY_LETTERS_ES[dow]}</th>`;
+ }
+
+ let rowsHTML = "";
+ people.forEach(person=>{
+  const isNightGroup = person.defaultShift === "N";
+  let cellsHTML = "";
+  for(let d=1; d<=daysInMonth; d++){
+   const dt = new Date(year, month - 1, d);
+   const dow = dt.getDay();
+   const isWknd = (dow === 0 || dow === 6);
+   const dayKey = `${monthStr}-${String(d).padStart(2,"0")}`;
+   const { code, vigia } = getRosterCellData(type, person.id, dayKey);
+   const codeClass = code ? `code-${code}` : "";
+   const vigiaClass = vigia ? "is-vigia" : "";
+   cellsHTML += `<td class="roster-cell ${isWknd?"wknd":""} ${codeClass} ${vigiaClass}" title="${esc(person.name)} · ${dayKey}${vigia?" · VIGÍA":""}" onclick="openRosterCellEditor('${type}','${person.id}','${esc(person.name)}','${dayKey}')">${esc(code)}</td>`;
+  }
+  rowsHTML += `
+  <tr>
+   <td class="roster-name-col ${isNightGroup?"night-row":""}">
+    <span>${esc(person.name)}</span>
+    ${canEdit ? `<span class="roster-row-actions"><button type="button" class="btn red xs" title="Quitar de planilla" onclick="removeRosterPerson('${type}','${person.id}','${esc(person.name)}')">✕</button></span>` : ""}
+   </td>
+   ${cellsHTML}
+  </tr>`;
+ });
+
+ container.innerHTML = `
+  <div class="card" style="margin-bottom:15px">
+   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div>
+     <h3 style="margin:0">${isNursing ? "🩺 Planilla Mensual de Enfermería" : "🤝 Planilla Mensual de Asistencia"}</h3>
+     <p class="muted" style="margin:4px 0 0">Responsable de edición: <b>${isNursing ? "Luisina (Luisi)" : "Romina (Romi)"}</b> · Tocá cualquier casillero para asignar <b>M, T, N, F, V</b> o marcar <b>Vigía</b> en azul.</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+     <label><b>Mes:</b></label>
+     <input type="month" value="${monthStr}" onchange="${isNursing?"currentMonthNursing":"currentMonthStaff"}=this.value; renderAll();">
+     ${canEdit ? `<button class="btn green sm" onclick="addRosterPerson('${type}')">＋ Agregar ${isNursing?"enfermera":"asistente"}</button>` : `<span class="badge graybadge">Modo lectura</span>`}
+    </div>
+   </div>
+   <div class="roster-legend">
+    <span class="legend-pill"><b>M</b> = Mañana</span>
+    <span class="legend-pill"><b>T</b> = Tarde</span>
+    <span class="legend-pill"><b>N</b> = Noche</span>
+    <span class="legend-pill" style="color:#1d4ed8;border-color:#93c5fd;background:#eff6ff"><b style="text-decoration:underline">M / T / N</b> (Azul) = Vigía</span>
+    <span class="legend-pill" style="color:#dc2626"><b>F</b> = Franco</span>
+    <span class="legend-pill" style="background:#ffff00"><b>V</b> = Vacaciones</span>
+    <span class="legend-pill" style="color:#dc2626"><b>E</b> = Licencia/Enf.</span>
+   </div>
+  </div>
+
+  <div class="roster-wrap">
+   <table class="roster-table">
+    <thead>
+     <tr>
+      <th class="roster-banner" colspan="${daysInMonth + 1}">PLANILLA GUARDIA ${monthTitle} - CARE ${year} (${isNursing?"ENFERMERÍA":"ASISTENCIA"})</th>
+     </tr>
+     <tr>
+      <th class="roster-name-col roster-date-hdr">Fecha</th>
+      ${dateHeaders}
+     </tr>
+     <tr>
+      <th class="roster-name-col roster-day-hdr">Días</th>
+      ${dayHeaders}
+     </tr>
+    </thead>
+    <tbody>
+     ${rowsHTML || `<tr><td colspan="${daysInMonth+1}" class="empty">No hay personal en esta planilla. Agregá uno con el botón superior.</td></tr>`}
+    </tbody>
+   </table>
+  </div>
+
+  <div class="card" style="margin-top:15px">
+   <h3 style="margin:0 0 10px">📊 Resumen automático de guardia para el ${previewDate}</h3>
+   ${renderDutyCardsHTML(previewDate)}
+  </div>
+ `;
+}
+
+function renderNursingStaffArea(){ renderMatrixRoster("nursing"); }
+function renderAssistantStaffArea(){ renderMatrixRoster("staff"); }
+
+/* =========================================================================
+   PACIENTES, HABITACIONES Y FICHA DE DERIVACIÓN IMPRIMIBLE
+   ========================================================================= */
+function fillRooms(selectedRoom=null,selectedBed=null){
+ const s=document.getElementById("pRoom");
+ s.innerHTML=data.rooms.map((r,i)=>`<option value="${i}">Habitación ${esc(r.n)}</option>`).join("");
+ if(selectedRoom!==null) s.value=selectedRoom;
+ updateBeds(selectedBed);
+}
+function updateBeds(selectedBed=null){
+ const ri=+document.getElementById("pRoom").value,s=document.getElementById("pBed");
+ if(!data.rooms[ri]) return;
+ s.innerHTML=data.rooms[ri].beds.map((p,i)=>`<option value="${i}" ${selectedBed===i?"selected":""}>Cama ${i+1}${p?" · "+esc(p):" · Libre"}</option>`).join("");
+}
+document.getElementById("pRoom").addEventListener("change",()=>updateBeds());
+
+let editPatientId=null;
+function promoteLegacyPatient(name){
+ const p=patientByName(name);
+ if(!p) return null;
+ if(!p.legacy) return p;
+ const np={id:uid("p"),created:today(),name:p.name,dni:"",sex:"Sin completar",birth:"",status:"Internado",admission:"",roomIndex:p.roomIndex,bedIndex:p.bedIndex,room:p.room,bed:p.bed,health:"",allergy:"",insurance:"",doctor:"",mobility:"",diet:"",notes:""};
+ data.patients.push(np);
+ save();
+ return np;
+}
+function openPatient(id=null){
+ editPatientId=id;let p=id?getPatient(id):null;
+ document.getElementById("patientModalTitle").textContent=p?"Editar expediente":"Nuevo paciente";
+ document.getElementById("deletePatientBtn").style.display=p?"inline-block":"none";
+ ["pName","pDni","pBirth","pAdmission","pHealth","pAllergy","pInsurance","pDoctor","pDiet","pNotes"].forEach(k=>document.getElementById(k).value=p?.[k.replace(/^p/,"").toLowerCase()]||"");
+ ["pCanSpeak","pCognition","pHearing","pVision","pAids","pRisks","pEmergency","pGuardian","pClinicalUpdate"].forEach(k=>{const el=document.getElementById(k);if(el)el.value=p?.[k.replace(/^p/,"").replace(/^./,c=>c.toLowerCase())]||el.options?.[0]?.value||""});
+ document.getElementById("pName").value=p?.name||"";
+ document.getElementById("pDni").value=p?.dni||"";
+ document.getElementById("pSex").value=p?.sex||"Sin completar";
+ document.getElementById("pStatus").value=p?.status||"Internado";
+ const ri=p?.roomIndex??Math.max(0,data.rooms.findIndex(r=>r.beds.some(x=>!x)));
+ fillRooms(ri>=0?ri:0,p?.bedIndex??null);
+ openModal("patientModal");
+}
+document.getElementById("patientForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ let name=pName.value.trim(),ri=+pRoom.value,bi=+pBed.value;if(!name)return;
+ let occupant=data.rooms[ri]?.beds[bi];
+ if(occupant&&occupant!==name){toast("Esa cama ya está ocupada. Elegí otra.");return;}
+ let obj={name,dni:pDni.value.trim(),sex:pSex.value,birth:pBirth.value,status:pStatus.value,admission:pAdmission.value,roomIndex:ri,bedIndex:bi,room:data.rooms[ri].n,bed:bi+1,health:pHealth.value,allergy:pAllergy.value,insurance:pInsurance.value,doctor:pDoctor.value,mobility:pMobility.value,diet:pDiet.value,notes:pNotes.value,canSpeak:pCanSpeak.value,cognition:pCognition.value,hearing:pHearing.value,vision:pVision.value,aids:pAids.value,risks:pRisks.value,emergency:pEmergency.value,guardian:pGuardian.value,clinicalUpdate:pClinicalUpdate.value};
+ if(editPatientId){
+  let p=getPatient(editPatientId),oldR=p.roomIndex,oldB=p.bedIndex;
+  if(data.rooms[oldR]?.beds[oldB]===p.name) data.rooms[oldR].beds[oldB]="";
+  Object.assign(p,obj);data.rooms[ri].beds[bi]=name;log("Se actualizó el expediente de "+name);
+ }else{
+  let p={id:uid("p"),created:today(),...obj};data.patients.push(p);data.rooms[ri].beds[bi]=name;log("Se creó el expediente de "+name);
+ }
+ save();closeModal("patientModal");renderAll();toast("Expediente guardado correctamente");
+});
+function deletePatient(){
+ if(!editPatientId)return;let p=getPatient(editPatientId);if(!p)return;
+ if(!confirm("¿Eliminar definitivamente el expediente de "+p.name+"?"))return;
+ if(data.rooms[p.roomIndex]?.beds[p.bedIndex]===p.name)data.rooms[p.roomIndex].beds[p.bedIndex]="";
+ data.patients=data.patients.filter(x=>x.id!==editPatientId);log("Se eliminó el expediente de "+p.name);save();closeModal("patientModal");renderAll();toast("Expediente eliminado");
+}
+function openPatientByName(name){
+ const decoded=decodeURIComponent(name);
+ const p=promoteLegacyPatient(decoded);
+ if(p){renderAll();openPatient(p.id);}
+ else toast("No se encontró el paciente.");
+}
+
+function calcAge(birth){
+ if(!birth) return "";
+ const b=new Date(birth+"T00:00:00");
+ if(Number.isNaN(b.getTime())) return "";
+ const now=new Date();
+ let age=now.getFullYear()-b.getFullYear();
+ const m=now.getMonth()-b.getMonth();
+ if(m<0||(m===0&&now.getDate()<b.getDate())) age--;
+ return age>=0 ? `${age} años` : "";
+}
+
+function openPatientPrintSheet(encodedName){
+ const name=decodeURIComponent(encodedName);
+ const p=patientByName(name)||{name};
+ const activeMeds=(data.meds||[]).filter(m=>m.patient===name && m.status==="Activa");
+ const lastVitals=(data.nursing||[]).filter(n=>n.patient===name).slice(0,3);
+ const contacts=(data.contacts||[]).filter(c=>c.patient===name);
+ const age=calcAge(p.birth);
+
+ document.getElementById("printContent").innerHTML=`
+ <div class="print-sheet">
+  <div class="print-header">
+   <div>
+    <h2 style="margin:0;color:#174ea6">🏥 CARE · FICHA CLÍNICA Y DERIVACIÓN</h2>
+    <small class="muted">Sistema Integral de Gestión Geriátrica · Emitido el ${new Date().toLocaleString("es-AR")}</small>
+   </div>
+   <div style="text-align:right">
+    <b>Habitación ${esc(p.room||"—")} · Cama ${esc(p.bed||"—")}</b><br>
+    <span class="badge ok">${esc(p.status||"Internado")}</span>
+   </div>
+  </div>
+
+  <div class="print-grid">
+   <div><b>Residente:</b> ${esc(p.name)}</div>
+   <div><b>DNI:</b> ${esc(p.dni||"Sin registrar")}</div>
+   <div><b>Fecha Nac.:</b> ${esc(p.birth||"—")} ${age?`(${age})`:""}</div>
+   <div><b>Sexo:</b> ${esc(p.sex||"—")}</div>
+   <div><b>Obra Social:</b> ${esc(p.insurance||"Sin registrar")}</div>
+   <div><b>Médico cabecera:</b> ${esc(p.doctor||"—")}</div>
+   <div><b>Fecha ingreso:</b> ${esc(p.admission||"—")}</div>
+   <div><b>Movilidad:</b> ${esc(p.mobility||"—")}</div>
+  </div>
+
+  ${p.allergy ? `<div class="print-box" style="background:#fff1f2;border-color:#fca5a5"><h4 style="color:#b91c1c">⚠️ ALERGIAS CONOCIDAS</h4><b>${esc(p.allergy)}</b></div>` : ""}
+
+  <div class="print-box">
+   <h4>🩺 Diagnósticos, Antecedentes y Riesgos</h4>
+   <p style="margin:0 0 6px">${esc(p.health||"Sin diagnósticos registrados.")}</p>
+   <small><b>Cognición:</b> ${esc(p.cognition||"—")} · <b>Comunicación:</b> ${esc(p.canSpeak||"—")} · <b>Riesgos:</b> ${esc(p.risks||"—")} · <b>Dieta:</b> ${esc(p.diet||"—")}</small>
+  </div>
+
+  <div class="print-box">
+   <h4>💊 Medicación Activa (${activeMeds.length})</h4>
+   ${activeMeds.length ? activeMeds.map(m=>`<div>• <b>${esc(m.drug)}</b> ${esc(m.dose||"")} — Horario: ${esc(m.time||"—")} (${esc(m.route)})</div>`).join("") : "<small class='muted'>Sin medicación activa registrada.</small>"}
+  </div>
+
+  <div class="print-box">
+   <h4>📈 Últimos Signos Vitales</h4>
+   ${lastVitals.length ? lastVitals.map(v=>`<div>• <b>${esc(v.date?.replace("T"," "))}:</b> PA ${esc(v.bp||"—")} | FC ${esc(v.pulse||"—")} | Temp ${esc(v.temp||"—")}°C | SatO₂ ${esc(v.o2||"—")}% | Gluc ${esc(v.glucose||"—")}</div>`).join("") : "<small class='muted'>Sin controles recientes.</small>"}
+  </div>
+
+  <div class="print-box">
+   <h4>📞 Contactos Familiares y Emergencia</h4>
+   <div><b>Emergencia en ficha:</b> ${esc(p.emergency||"—")} · <b>Responsable:</b> ${esc(p.guardian||"—")}</div>
+   ${contacts.map(c=>`<div>• ${esc(c.name)} (${esc(c.relation||"Familiar")}): <b>${esc(c.phone||"—")}</b></div>`).join("")}
+  </div>
+ </div>`;
+ openModal("printModal");
+}
+
+function renderPatients(){
+ let q=(document.getElementById("patientSearch")?.value||"").toLowerCase(),st=document.getElementById("patientStatusFilter")?.value||"";
+ let arr=patientsAll().filter(p=>(!st||p.status===st)&&[p.name,p.dni,p.room,p.bed].join(" ").toLowerCase().includes(q));
+ document.getElementById("patientTable").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Ubicación</th><th>DNI / Edad</th><th>Alergias / Riesgos</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${arr.map(p=>{
+  const age=calcAge(p.birth);
+  return `<tr>
+   <td><b>${esc(p.name)}</b></td>
+   <td>Hab. ${esc(p.room||"—")} · Cama ${p.bed||"—"}</td>
+   <td>${esc(p.dni||"—")}${age?`<br><small class="muted">${age}</small>`:""}</td>
+   <td>${p.allergy?`<span class="badge danger">Alergia: ${esc(p.allergy)}</span> `:""}${p.risks?`<small>${esc(p.risks)}</small>`:(!p.allergy?"—":"")}</td>
+   <td><span class="badge ${p.status==="Alta"?"graybadge":"ok"}">${esc(p.status||"Internado")}</span></td>
+   <td><div class="actions">
+    <button class="btn secondary sm" onclick="openPatientByName('${encodeURIComponent(p.name)}')">${p.legacy?"Completar":"Editar"}</button>
+    <button class="btn gray sm" onclick="openPatientPrintSheet('${encodeURIComponent(p.name)}')">📄 Ficha / PDF</button>
+   </div></td>
+  </tr>`;
+ }).join("")||`<tr><td colspan="6" class="empty">No se encontraron pacientes.</td></tr>`}</tbody></table></div>`;
+}
+
+function renderRooms(){
+ let q=(document.getElementById("roomSearch")?.value||"").toLowerCase(),root=document.getElementById("roomGrid");root.innerHTML="";
+ data.rooms.forEach((r,ri)=>{
+  if(q&&!((r.n+" "+r.beds.join(" ")).toLowerCase().includes(q))) return;
+  let el=document.createElement("section");el.className="room";
+  el.innerHTML=`<div class="roomhead"><b>Habitación ${esc(r.n)}</b>${r.private?'<span class="badge warn">Privada</span>':""}</div><div class="beds">${r.beds.map((p,bi)=>`<div class="bed ${p?"":"free"}"><div><div class="bedname">Cama ${bi+1}</div><div class="patient">${p?esc(p):"Libre"}</div></div><div>${p?'<span class="badge ok">Ocupada</span>':'<span class="badge graybadge">Libre</span>'}<br><button class="btn secondary sm" style="margin-top:5px" onclick="${p?`openPatientByName('${encodeURIComponent(p)}')`:`assignBed(${ri},${bi})`}">${p?"Expediente":"Asignar"}</button></div></div>`).join("")}</div>`;
+  root.appendChild(el);
+ });
+}
+function assignBed(ri,bi){
+ document.getElementById("patientModalTitle").textContent="Asignar paciente";
+ editPatientId=null;document.getElementById("patientForm").reset();document.getElementById("deletePatientBtn").style.display="none";
+ fillRooms(ri,bi);document.getElementById("pStatus").value="Internado";document.getElementById("pAdmission").value=today();
+ openModal("patientModal");
+}
+
+/* =========================================================================
+   ENFERMERÍA + DETECCIÓN AUTOMÁTICA DE SIGNOS FUERA DE RANGO
+   ========================================================================= */
+let editingNursingId=null;
+function openNursing(id=null){
+ fillPatientSelect("nPatient");document.getElementById("nursingForm").reset();editingNursingId=id;
+ const x=id?data.nursing.find(r=>r.id===id):null;
+ if(x){Object.entries({nPatient:"patient",nDate:"date",nShift:"shift",nBP:"bp",nPulse:"pulse",nResp:"resp",nTemp:"temp",nO2:"o2",nGlucose:"glucose",nWeight:"weight",nPain:"pain",nFood:"food",nHydration:"hydration",nBowel:"bowel",nUrine:"urine",nHygiene:"hygiene",nMobility:"mobility",nSkin:"skin",nMeds:"meds",nStaff:"staff",nObs:"obs"}).forEach(([el,key])=>document.getElementById(el).value=x[key]??"");}
+ else nDate.value=nowLocal();
+ openModal("nursingModal");
+}
+
+function checkVitalAlerts(v){
+ const warns=[];
+ const m=String(v.bp||"").match(/(\d+)\s*\/\s*(\d+)/);
+ if(m && (Number(m[1])>=160 || Number(m[2])>=100)) warns.push(`PA elevada (${v.bp})`);
+ if(v.temp && Number(v.temp)>=37.8) warns.push(`Temperatura elevada (${v.temp}°C)`);
+ if(v.o2 && Number(v.o2)>0 && Number(v.o2)<92) warns.push(`Saturación baja (${v.o2}%)`);
+ if(v.glucose && Number(v.glucose)>0 && (Number(v.glucose)<70 || Number(v.glucose)>250)) warns.push(`Glucemia alterada (${v.glucose} mg/dL)`);
+ return warns;
+}
+
+document.getElementById("nursingForm").addEventListener("submit",e=>{
+ e.preventDefault();if(!nPatient.value){toast("Primero seleccioná un paciente.");return;}
+ let x={id:editingNursingId||uid("n"),patient:nPatient.value,date:nDate.value,shift:nShift.value,bp:nBP.value,pulse:nPulse.value,resp:nResp.value,temp:nTemp.value,o2:nO2.value,glucose:nGlucose.value,weight:nWeight.value,pain:nPain.value,food:nFood.value,hydration:nHydration.value,bowel:nBowel.value,urine:nUrine.value,hygiene:nHygiene.value,mobility:nMobility.value,skin:nSkin.value,meds:nMeds.value,staff:nStaff.value,obs:nObs.value};
+ const alerts=checkVitalAlerts(x);
+ if(editingNursingId){
+  const ix=data.nursing.findIndex(r=>r.id===editingNursingId);
+  if(ix>=0) data.nursing[ix]={...data.nursing[ix],...x};
+  log(`Se editó un control de enfermería de ${x.patient}`);
+ }else{
+  data.nursing.unshift(x);
+  log(`Enfermería registró signos de ${x.patient}`+(alerts.length?` · ⚠️ ${alerts.join(", ")}`:""),"nursing",alerts.length?"Importante":"Normal");
+ }
+ editingNursingId=null;save();closeModal("nursingModal");renderAll();
+ toast(alerts.length ? `Control guardado con ALERTA: ${alerts.join(", ")}` : "Control de enfermería guardado");
+});
+
+function renderNursing(){
+ let arr=data.nursing;document.getElementById("nCount").textContent=arr.length;
+ document.getElementById("bpAlerts").textContent=arr.filter(x=>{let m=String(x.bp||"").match(/(\d+)\s*\/\s*(\d+)/);return m&&(Number(m[1])>=160||Number(m[2])>=100)}).length;
+ document.getElementById("tempAlerts").textContent=arr.filter(x=>Number(x.temp)>=37.8).length;
+ if(document.getElementById("o2Alerts")) document.getElementById("o2Alerts").textContent=arr.filter(x=>Number(x.o2)>0&&Number(x.o2)<92).length;
+ let ta=arr.filter(x=>(x.date||"").slice(0,10)===today());
+ document.getElementById("todayNursing").innerHTML=ta.length?ta.slice(0,10).map(x=>`<div class="mini-row"><span><b>${esc(x.patient)}</b><br><small>${esc(x.date?.replace("T"," "))}</small></span><span>${x.bp?`PA ${esc(x.bp)}`:""} ${x.temp?`· ${esc(x.temp)}°`:""} ${x.o2?`· O₂ ${esc(x.o2)}%`:""}</span></div>`).join(""):"<div class='empty'>No hay controles de hoy.</div>";
+ document.getElementById("nursingTable").innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Paciente</th><th>PA</th><th>FC</th><th>FR</th><th>Temp.</th><th>O₂</th><th>Gluc.</th><th>Dolor</th><th>Enfermería</th><th>Observaciones</th><th>Acciones</th></tr></thead><tbody>${arr.slice(0,150).map(x=>{
+  const warns=checkVitalAlerts(x);
+  return `<tr><td>${esc(x.date?.replace("T"," "))}</td><td><b>${esc(x.patient)}</b>${warns.length?`<br><span class="badge danger">${esc(warns.join(" · "))}</span>`:""}</td><td>${esc(x.bp||"—")}</td><td>${esc(x.pulse||"—")}</td><td>${esc(x.resp||"—")}</td><td>${esc(x.temp||"—")}</td><td>${esc(x.o2||"—")}</td><td>${esc(x.glucose||"—")}</td><td>${esc(x.pain||"—")}</td><td>${esc(x.staff||"—")}</td><td>${esc(x.obs||"—")}</td><td><div class="record-actions"><button class="btn secondary" onclick="openNursing('${x.id}')">Editar</button><button class="btn red" onclick="deleteRecord('nursing','${x.id}')">Borrar</button></div></td></tr>`;
+ }).join("")}</tbody></table></div>`:"<div class='empty'>Todavía no hay controles.</div>";
+}
+
+/* =========================================================================
+   CUIDADOS DIARIOS
+   ========================================================================= */
+function openCare(){fillPatientSelect("cPatient");document.getElementById("careForm").reset();cDate.value=today();openModal("careModal")}
+document.getElementById("careForm").addEventListener("submit",e=>{e.preventDefault();let x={id:uid("c"),patient:cPatient.value,date:cDate.value,bath:cBath.value,dress:cDress.value,food:cFood.value,move:cMove.value,sleep:cSleep.value,activity:cActivity.value,staff:cStaff.value,obs:cObs.value};data.care.unshift(x);log("Se registró cuidado para "+x.patient);save();closeModal("careModal");renderAll();toast("Cuidado guardado")});
+function renderCare(){document.getElementById("careTable").innerHTML=data.care.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Paciente</th><th>Higiene</th><th>Vestimenta</th><th>Alimentación</th><th>Movilidad</th><th>Sueño</th><th>Actividad</th><th>Personal</th><th>Observaciones</th></tr></thead><tbody>${data.care.map(x=>`<tr><td>${esc(x.date)}</td><td><b>${esc(x.patient)}</b></td><td>${esc(x.bath)}</td><td>${esc(x.dress)}</td><td>${esc(x.food)}</td><td>${esc(x.move)}</td><td>${esc(x.sleep)}</td><td>${esc(x.activity||"—")}</td><td>${esc(x.staff||"—")}</td><td>${esc(x.obs||"—")}</td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay cuidados registrados.</div>"}
+
+/* =========================================================================
+   PERSONAL
+   ========================================================================= */
+let editStaffId=null;
+function openStaff(id=null){
+ editStaffId=id;
+ const x=id?data.staff.find(s=>s.id===id):null;
+ document.getElementById("staffModalTitle").textContent=x?"Editar expediente del personal":"Nuevo expediente de personal";
+ document.getElementById("deleteStaffBtn").style.display=x?"inline-block":"none";
+ document.getElementById("stName").value=x?.name||"";
+ document.getElementById("stSector").value=x?.sector||"Asistencia";
+ document.getElementById("stShift").value=x?.shift||"";
+ document.getElementById("stPhone").value=x?.phone||"";
+ document.getElementById("stDni").value=x?.dni||"";
+ document.getElementById("stStatus").value=x?.status||"Activo";
+ document.getElementById("stNotes").value=x?.notes||"";
+ openModal("staffModal");
+}
+document.getElementById("staffForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ let obj={name:stName.value.trim(),sector:stSector.value,shift:stShift.value,phone:stPhone.value,dni:stDni.value,status:stStatus.value,notes:stNotes.value};
+ if(!obj.name){toast("Ingresá el nombre del trabajador.");return;}
+ if(editStaffId){
+  const x=data.staff.find(s=>s.id===editStaffId);
+  if(!x)return; Object.assign(x,obj); log("Se actualizó el expediente del personal: "+x.name); toast("Expediente actualizado");
+ }else{
+  const x={id:uid("st"),...obj}; data.staff.push(x); log("Se agregó personal: "+x.name+" · "+x.sector); toast("Expediente guardado");
+ }
+ save();closeModal("staffModal");renderAll();
+});
+function deleteStaff(){
+ if(!editStaffId)return; const x=data.staff.find(s=>s.id===editStaffId); if(!x)return;
+ if(!confirm("¿Eliminar definitivamente el expediente de "+x.name+"?"))return;
+ data.staff=data.staff.filter(s=>s.id!==editStaffId); log("Se eliminó el expediente del personal: "+x.name); save(); closeModal("staffModal"); renderAll(); toast("Expediente eliminado");
+}
+function renderStaff(){
+ let q=(document.getElementById("staffSearch")?.value||"").toLowerCase(),arr=data.staff.filter(x=>(x.name+" "+x.sector+" "+x.shift).toLowerCase().includes(q));
+ document.getElementById("staffTable").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Trabajador</th><th>Sector</th><th>Turno</th><th>Teléfono</th><th>Estado</th><th>Observaciones</th><th>Acciones</th></tr></thead><tbody>${arr.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td><span class="badge blue">${esc(x.sector)}</span></td><td>${esc(x.shift||"—")}</td><td>${esc(x.phone||"—")}</td><td><span class="badge ${x.status==="Activo"?"ok":"graybadge"}">${esc(x.status||"Activo")}</span></td><td>${esc(x.notes||"—")}</td><td><button class="btn secondary sm" onclick="openStaff('${x.id}')">Abrir expediente</button></td></tr>`).join("")||`<tr><td colspan="7" class="empty">No se encontró personal.</td></tr>`}</tbody></table></div>`;
+}
+
+/* =========================================================================
+   MEDICACIÓN + CONTROL DE TOMAS DIARIAS (MAR)
+   ========================================================================= */
+function openMedication(){fillPatientSelect("mPatient");document.getElementById("medForm").reset();mStart.value=today();openModal("medModal")}
+document.getElementById("medForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ let x={id:uid("m"),patient:mPatient.value,drug:mDrug.value,dose:mDose.value,time:mTime.value,route:mRoute.value,doctor:mDoctor.value,start:mStart.value,status:mStatus.value,obs:mObs.value};
+ data.meds.unshift(x);log("Nueva indicación médica para "+x.patient+": "+x.drug);save();closeModal("medModal");renderAll();toast("Medicación guardada");
+});
+
+function toggleMedDose(medId, shift){
+ const dateInput = document.getElementById("medLogDate");
+ const logDate = dateInput?.value || today();
+ data.medLogs = data.medLogs || [];
+ const existingIdx = data.medLogs.findIndex(l=>l.medId===medId && l.date===logDate && l.shift===shift);
+ const med = data.meds.find(m=>m.id===medId);
+ if(existingIdx >= 0){
+  if(!confirm("¿Anular el registro de esta toma?")) return;
+  data.medLogs.splice(existingIdx, 1);
+  log(`Se anuló registro de toma (${shift}) de ${med?.drug||"medicación"} para ${med?.patient||""}`);
+ }else{
+  const who = prompt(`Registrar toma (${shift}) de ${med?.drug||""} para ${med?.patient||""}.\nIngresá nombre de quien administra:`, supabaseUser?.email?.split("@")[0]||"Enfermería");
+  if(who === null) return;
+  const nowTime = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  data.medLogs.unshift({
+   id: uid("ml"),
+   medId,
+   patient: med?.patient||"",
+   drug: med?.drug||"",
+   date: logDate,
+   shift,
+   time: nowTime,
+   staff: who.trim() || "Enfermería"
+  });
+  log(`Medicación administrada (${shift} ${nowTime}): ${med?.drug} a ${med?.patient}`);
+ }
+ save();
+ renderMeds();
+}
+
+function toggleMedStatus(medId){
+ const m = data.meds.find(x=>x.id===medId);
+ if(!m) return;
+ m.status = m.status==="Activa" ? "Suspendida" : "Activa";
+ log(`Medicación ${m.drug} (${m.patient}) pasó a estado: ${m.status}`);
+ save();
+ renderMeds();
+}
+
+function renderMeds(){
+ const dateInput = document.getElementById("medLogDate");
+ if(dateInput && !dateInput.value) dateInput.value = today();
+ const logDate = dateInput?.value || today();
+ const activeMeds = (data.meds||[]).filter(m=>m.status==="Activa");
+ const logs = data.medLogs || [];
+
+ const checkRoot = document.getElementById("medDailyChecklist");
+ if(checkRoot){
+  checkRoot.innerHTML = activeMeds.length ? `<div class="table-wrap"><table><thead><tr><th>Residente</th><th>Medicamento / Dosis</th><th>Horario Indicado</th><th>Turno Mañana</th><th>Turno Tarde</th><th>Turno Noche</th></tr></thead><tbody>${activeMeds.map(m=>{
+   const renderShiftBtn = (sh) => {
+    const found = logs.find(l=>l.medId===m.id && l.date===logDate && l.shift===sh);
+    return found
+     ? `<button class="btn green sm" onclick="toggleMedDose('${m.id}','${sh}')">✅ ${esc(found.time)} · ${esc(found.staff)}</button>`
+     : `<button class="btn gray sm" onclick="toggleMedDose('${m.id}','${sh}')">Marcar ${sh}</button>`;
+   };
+   return `<tr><td><b>${esc(m.patient)}</b></td><td><b>${esc(m.drug)}</b> ${esc(m.dose||"")}<br><small class="muted">${esc(m.route)}</small></td><td>${esc(m.time||"—")}</td><td>${renderShiftBtn("Mañana")}</td><td>${renderShiftBtn("Tarde")}</td><td>${renderShiftBtn("Noche")}</td></tr>`;
+  }).join("")}</tbody></table></div>` : "<div class='empty'>No hay medicaciones activas para administrar hoy.</div>";
+ }
+
+ document.getElementById("medTable").innerHTML=data.meds.length?`<div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Medicamento</th><th>Dosis</th><th>Horario</th><th>Vía</th><th>Indicado por</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${data.meds.map(x=>`<tr><td><b>${esc(x.patient)}</b></td><td>${esc(x.drug)}</td><td>${esc(x.dose||"—")}</td><td>${esc(x.time||"—")}</td><td>${esc(x.route)}</td><td>${esc(x.doctor||"—")}</td><td><span class="badge ${x.status==="Activa"?"ok":"graybadge"}">${esc(x.status)}</span></td><td><div class="record-actions"><button class="btn secondary" onclick="toggleMedStatus('${x.id}')">${x.status==="Activa"?"Suspender":"Reactivar"}</button><button class="btn red" onclick="deleteRecord('meds','${x.id}')">Borrar</button></div></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay indicaciones.</div>";
+}
+
+/* =========================================================================
+   INCIDENTES, TURNOS, CONTACTOS, INGRESOS, DOCTORES
+   ========================================================================= */
+function openIncident(){fillPatientSelect("iPatient");document.getElementById("incidentForm").reset();iDate.value=nowLocal();openModal("incidentModal")}
+document.getElementById("incidentForm").addEventListener("submit",e=>{e.preventDefault();let x={id:uid("i"),patient:iPatient.value,date:iDate.value,type:iType.value,priority:iPriority.value,detail:iDetail.value,staff:iStaff.value};data.incidents.unshift(x);log("Incidente / novedad · "+(x.patient||"General")+" · "+x.type+" · "+x.priority+": "+x.detail,"incident",x.priority);if(!save())return;closeModal("incidentModal");renderAll();toast("Incidente guardado y agregado a Actividad reciente")});
+function renderIncidents(){document.getElementById("incidentTable").innerHTML=data.incidents.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Prioridad</th><th>Detalle</th><th>Registrado por</th></tr></thead><tbody>${data.incidents.map(x=>`<tr><td>${esc(x.date?.replace("T"," "))}</td><td><b>${esc(x.patient)}</b></td><td>${esc(x.type)}</td><td><span class="badge ${x.priority==="Urgente"?"danger":x.priority==="Importante"?"warn":"graybadge"}">${esc(x.priority)}</span></td><td>${esc(x.detail)}</td><td>${esc(x.staff||"—")}</td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay incidentes registrados.</div>"}
+
+function openAppointment(){fillPatientSelect("apPatient");document.getElementById("appointmentForm").reset();apDate.value=nowLocal();openModal("appointmentModal")}
+document.getElementById("appointmentForm").addEventListener("submit",e=>{e.preventDefault();let x={id:uid("ap"),patient:apPatient.value,date:apDate.value,professional:apProfessional.value,type:apType.value,status:apStatus.value,place:apPlace.value,notes:apNotes.value};data.appointments.unshift(x);log("Se registró turno para "+x.patient);save();closeModal("appointmentModal");renderAll();toast("Turno guardado")});
+function renderAppointments(){document.getElementById("appointmentTable").innerHTML=data.appointments.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Paciente</th><th>Tipo</th><th>Profesional</th><th>Lugar</th><th>Estado</th><th>Notas</th></tr></thead><tbody>${data.appointments.map(x=>`<tr><td>${esc(x.date?.replace("T"," "))}</td><td><b>${esc(x.patient)}</b></td><td>${esc(x.type)}</td><td>${esc(x.professional||"—")}</td><td>${esc(x.place||"—")}</td><td>${esc(x.status)}</td><td>${esc(x.notes||"—")}</td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay turnos registrados.</div>"}
+
+function openContact(){fillPatientSelect("coPatient");document.getElementById("contactForm").reset();openModal("contactModal")}
+document.getElementById("contactForm").addEventListener("submit",e=>{e.preventDefault();let x={id:uid("co"),patient:coPatient.value,name:coName.value,relation:coRelation.value,phone:coPhone.value,email:coEmail.value,main:coMain.value,notes:coNotes.value};data.contacts.unshift(x);log("Se agregó contacto de "+x.patient);save();closeModal("contactModal");renderAll();toast("Contacto guardado")});
+function renderContacts(){document.getElementById("contactTable").innerHTML=data.contacts.length?`<div class="table-wrap"><table><thead><tr><th>Paciente</th><th>Contacto</th><th>Vínculo</th><th>Teléfono</th><th>Email</th><th>Principal</th><th>Observaciones</th></tr></thead><tbody>${data.contacts.map(x=>`<tr><td><b>${esc(x.patient)}</b></td><td>${esc(x.name)}</td><td>${esc(x.relation||"—")}</td><td>${esc(x.phone||"—")}</td><td>${esc(x.email||"—")}</td><td>${x.main==="Sí"?'<span class="badge ok">Sí</span>':'No'}</td><td>${esc(x.notes||"—")}</td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay contactos registrados.</div>"}
+
+function openAdmission(){fillPatientSelect("adPatient");document.getElementById("admissionForm").reset();document.getElementById("adDate").value=nowLocal();openModal("admissionModal")}
+document.getElementById("admissionForm").addEventListener("submit",e=>{e.preventDefault();const patient=document.getElementById("adPatient").value;if(!patient){toast("Seleccioná un residente existente o ingresalo primero en la ficha nueva.");return}const x={id:uid("ad"),patient,date:document.getElementById("adDate").value||nowLocal(),type:document.getElementById("adType").value,place:document.getElementById("adPlace").value,notes:document.getElementById("adNotes").value,staff:document.getElementById("adStaff").value};data.admissions.unshift(x);const p=patientByName(x.patient);if(p&&!p.legacy){if(x.type==="Alta")p.status="Alta";if(["Ingreso","Reingreso"].includes(x.type))p.status="Internado"}log(x.type+" registrado para "+x.patient);if(!save())return;closeModal("admissionModal");renderAll();toast("Movimiento guardado correctamente")});
+function renderExistingAdmissionsPatients(){const q=(document.getElementById("adExistingSearch")?.value||"").toLowerCase();const arr=patientsAll().filter(p=>(p.name+" "+(p.room||"")+" "+(p.status||"")).toLowerCase().includes(q));document.getElementById("adExistingPatients").innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Residente</th><th>Habitación</th><th>Estado</th><th>Acción</th></tr></thead><tbody>${arr.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.room||"—")}</td><td>${esc(p.status||"Internado")}</td><td><button class="btn secondary sm" onclick="openAdmissionFor('${encodeURIComponent(p.name)}')">Registrar movimiento</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay residentes coincidentes.</div>"}
+function openAdmissionFor(encodedName){openAdmission();document.getElementById("adPatient").value=decodeURIComponent(encodedName)}
+function renderAdmissions(){renderExistingAdmissionsPatients();let c=data.admissions;adIn.textContent=c.filter(x=>x.type==="Ingreso"||x.type==="Reingreso").length;adOut.textContent=c.filter(x=>x.type==="Alta").length;adTransfer.textContent=c.filter(x=>x.type==="Traslado interno").length;document.getElementById("admissionTable").innerHTML=c.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Paciente</th><th>Movimiento</th><th>Origen / destino</th><th>Observaciones</th><th>Registrado por</th></tr></thead><tbody>${c.map(x=>`<tr><td>${esc(x.date?.replace("T"," "))}</td><td><b>${esc(x.patient)}</b></td><td>${esc(x.type)}</td><td>${esc(x.place||"—")}</td><td>${esc(x.notes||"—")}</td><td>${esc(x.staff||"—")}</td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay movimientos registrados.</div>"}
+
+let editingDoctorId=null;
+function openDoctorReport(id=null){
+ editingDoctorId=id;fillPatientSelect('dPatient');
+ document.getElementById('doctorForm').reset();
+ const old=id?(data.doctorReports||[]).find(r=>r.id===id):null;
+ if(old){dDate.value=old.date||nowLocal();dShift.value=old.shift||'Mañana';dPriority.value=old.priority||'Normal';dType.value=old.type||'Informe médico';dPatient.value=old.patient||'';dDetail.value=old.detail||'';dDoctor.value=old.doctor||'';}else{dDate.value=nowLocal();dShift.value='Mañana';dPriority.value='Normal';}
+ openModal('doctorModal');
+}
+document.getElementById('doctorForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const x={id:editingDoctorId||uid('dr'),date:document.getElementById('dDate').value||nowLocal(),shift:document.getElementById('dShift').value,priority:document.getElementById('dPriority').value,type:document.getElementById('dType').value,patient:document.getElementById('dPatient').value,detail:document.getElementById('dDetail').value.trim(),doctor:document.getElementById('dDoctor').value.trim()};
+ if(!x.detail){toast('Escribí el informe antes de guardarlo.');return}
+ data.doctorReports=data.doctorReports||[];
+ if(editingDoctorId){const ix=data.doctorReports.findIndex(r=>r.id===editingDoctorId);if(ix>=0)data.doctorReports[ix]={...data.doctorReports[ix],...x};else data.doctorReports.unshift(x);log('Se editó un informe de doctores','doctor',x.priority)}else{data.doctorReports.unshift(x);log('Informe de doctores'+(x.patient?' · '+x.patient:' general')+': '+x.type,'doctor',x.priority)}
+ if(!save())return;editingDoctorId=null;closeModal('doctorModal');renderAll();toast(x.priority==='Urgente'?'Informe urgente guardado y notificado':x.priority==='Importante'?'Informe importante guardado':'Informe de doctores guardado');
+});
+function renderDoctor(){
+ data.doctorReports=data.doctorReports||[];
+ const urgent=data.doctorReports.filter(x=>x.priority==='Urgente').length;
+ const important=data.doctorReports.filter(x=>x.priority==='Importante').length;
+ document.getElementById('doctorSummary').innerHTML=`<div class="mini-row"><span>🚨 Urgentes</span><b>${urgent}</b></div><div class="mini-row"><span>⚠️ Importantes</span><b>${important}</b></div><div class="mini-row"><span>📝 Informes totales</span><b>${data.doctorReports.length}</b></div>`;
+ document.getElementById('doctorReportTable').innerHTML=data.doctorReports.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Prioridad</th><th>Tipo</th><th>Paciente</th><th>Informe</th><th>Doctor</th><th>Acciones</th></tr></thead><tbody>${data.doctorReports.map(x=>`<tr><td>${esc(x.date?.replace('T',' '))}</td><td><span class="badge ${x.priority==='Urgente'?'danger':x.priority==='Importante'?'warn':'graybadge'}">${esc(x.priority)}</span></td><td>${esc(x.type)}</td><td>${esc(x.patient||'General')}</td><td>${esc(x.detail)}</td><td>${esc(x.doctor||'—')}</td><td><div class="record-actions"><button class="btn secondary" onclick="openDoctorReport('${x.id}')">Editar</button><button class="btn red" onclick="deleteRecord('doctorReports','${x.id}')">Borrar</button></div></td></tr>`).join('')}</tbody></table></div>`:"<div class='empty'>No hay informes de doctores registrados.</div>";
+}
+
+/* =========================================================================
+   DASHBOARD (ALERTAS + CUMPLEAÑOS + LECTURA DE GUARDIA)
+   ========================================================================= */
+function isWithin24Hours(value){const d=new Date(value||0);return !Number.isNaN(d.getTime())&&Date.now()>=d.getTime()&&Date.now()-d.getTime()<=86400000}
+function deleteRecord(collection,id){const arr=data[collection];if(!Array.isArray(arr))return;if(!confirm("¿Eliminar este registro? Esta acción no se puede deshacer."))return;data[collection]=arr.filter(x=>x.id!==id);log("Se eliminó un registro de "+collection);save();renderAll();toast("Registro eliminado")}
+function editActivity(id){const x=data.activity.find(a=>a.id===id);if(!x)return;const text=prompt("Editar actividad visible:",x.text);if(text===null)return;x.text=text.trim();save();renderAll();toast("Actividad actualizada")}
+function deleteActivity(id){if(!confirm("¿Borrar esta actividad del panel? El informe clínico original no se elimina."))return;data.activity=data.activity.filter(a=>a.id!==id);save();renderAll();toast("Actividad eliminada del panel")}
+function editIncidentText(id){const x=data.incidents.find(a=>a.id===id);if(!x)return;const detail=prompt("Editar detalle de la novedad:",x.detail||"");if(detail===null)return;x.detail=detail;save();renderAll();toast("Novedad actualizada")}
+
+function getUpcomingBirthdays(){
+ const now=new Date();
+ now.setHours(0,0,0,0);
+ const res=[];
+ patientsAll().forEach(p=>{
+  if(!p.birth || p.status==="Alta") return;
+  const parts=p.birth.split("-");
+  if(parts.length<3) return;
+  const m=Number(parts[1])-1, d=Number(parts[2]);
+  let next=new Date(now.getFullYear(), m, d);
+  if(next < now) next=new Date(now.getFullYear()+1, m, d);
+  const diffDays=Math.round((next - now)/86400000);
+  if(diffDays >= 0 && diffDays <= 7){
+   const turning=next.getFullYear() - Number(parts[0]);
+   res.push({ name:p.name, diffDays, turning, dateLabel:`${String(d).padStart(2,"0")}/${String(m+1).padStart(2,"0")}` });
+  }
+ });
+ return res.sort((a,b)=>a.diffDays-b.diffDays);
+}
+
+function renderDashboard(){
+ const dutyInput=document.getElementById("dashDutyDate");
+ if(dutyInput && !dutyInput.value) dutyInput.value=today();
+ const dutyDate=dutyInput?.value || today();
+ const dutyBox=document.getElementById("dashDutySummary");
+ if(dutyBox) dutyBox.innerHTML=renderDutyCardsHTML(dutyDate);
+
+ const oldActivityCount=data.activity.length;
+ data.activity=data.activity.filter(x=>isWithin24Hours(x.createdAt||x.date||null));
+ if(data.activity.length!==oldActivityCount) save();
+
+ let all=patientsAll(),beds=data.rooms.reduce((a,r)=>a+r.beds.length,0),free=data.rooms.reduce((a,r)=>a+r.beds.filter(x=>!x).length,0);
+ sPatients.textContent=all.filter(p=>p.status!=="Alta").length;sBeds.textContent=beds;sFree.textContent=free;sStaff.textContent=data.staff.length;sNursing.textContent=data.nursing.length;
+
+ const recentDoctors=(data.doctorReports||[]).filter(x=>isWithin24Hours(x.date)).slice(0,5);
+ const recentIncidents=data.incidents.filter(x=>isWithin24Hours(x.date)).slice(0,5);
+ const recentVitalAlerts=data.nursing.filter(x=>isWithin24Hours(x.date) && checkVitalAlerts(x).length>0).slice(0,5);
+
+ sAlerts.textContent=recentDoctors.filter(x=>x.priority!=="Normal").length+recentIncidents.filter(x=>x.priority!=="Normal").length+recentVitalAlerts.length;
+
+ const doctorAlerts=recentDoctors.filter(x=>x.priority!=="Normal").map(x=>`<div class="alert ${x.priority==="Urgente"?"red":"yellow"}"><b>👨‍⚕️ ${esc(x.priority)}</b> · ${esc(x.patient||"Aviso general")}<br><small>${esc(x.detail)}</small><div class="record-actions"><button class="btn secondary" onclick="openDoctorReport('${x.id}')">Editar</button><button class="btn red" onclick="deleteRecord('doctorReports','${x.id}')">Borrar</button></div></div>`).join("");
+ const vitalAlertsHTML=recentVitalAlerts.map(x=>`<div class="alert red"><b>🩺 Signo fuera de rango</b> · ${esc(x.patient)}<br><small>${esc(checkVitalAlerts(x).join(" · "))}</small></div>`).join("");
+ const incidentAlerts=recentIncidents.map(x=>`<div class="alert ${x.priority==="Urgente"?"red":x.priority==="Importante"?"yellow":"green"}"><b>${esc(x.patient||"General")}</b> · ${esc(x.type)}<br><small>${esc(x.detail)}</small><div class="record-actions"><button class="btn secondary" onclick="editIncidentText('${x.id}')">Editar detalle</button><button class="btn red" onclick="deleteRecord('incidents','${x.id}')">Borrar</button></div></div>`).join("");
+ dashAlerts.innerHTML=doctorAlerts+vitalAlertsHTML+incidentAlerts||"<div class='empty'>Sin alertas de las últimas 24 horas.</div>";
+
+ const bdays=getUpcomingBirthdays();
+ const bdayBox=document.getElementById("dashBirthdays");
+ if(bdayBox){
+  bdayBox.innerHTML=bdays.map(b=>`<div class="alert blue" style="margin-bottom:8px">🎂 <b>${esc(b.name)}</b> — ${b.diffDays===0?"¡Cumple hoy!":`En ${b.diffDays} día(s) (${b.dateLabel})`} · Cumple <b>${b.turning} años</b></div>`).join("");
+ }
+
+ const recentNursing=data.nursing.filter(x=>isWithin24Hours(x.date)).slice(0,5);
+ dashNursing.innerHTML=recentNursing.map(x=>`<div class="mini-row"><span><b>${esc(x.patient)}</b><br><small>${esc(x.date?.replace("T"," "))}</small><div class="record-actions"><button class="btn secondary" onclick="openNursing('${x.id}')">Editar</button><button class="btn red" onclick="deleteRecord('nursing','${x.id}')">Borrar</button></div></span><span>${x.bp?`PA ${esc(x.bp)}`:""} ${x.temp?`· ${esc(x.temp)}°`:""}</span></div>`).join("")||"<div class='empty'>Sin controles de las últimas 24 horas.</div>";
+
+ const recentActivity=data.activity.filter(x=>isWithin24Hours(x.createdAt||x.isoDate||x.date)).slice(0,15);
+ dashActivity.innerHTML=recentActivity.map(x=>`<div class="mini-row"><span>${x.priority==='Urgente'?'🚨 ':x.priority==='Importante'?'⚠️ ':''}<b>${x.source==='doctor'?'👨‍⚕️ ':''}</b>${esc(x.text)}<div class="record-actions"><button class="btn secondary" onclick="editActivity('${x.id}')">Editar</button><button class="btn red" onclick="deleteActivity('${x.id}')">Borrar</button></div></span><small>${esc(x.date)}</small></div>`).join("")||"<div class='empty'>Sin actividad de las últimas 24 horas.</div>";
+}
+
+/* =========================================================================
+   REPORTES, TURNOS ENFERMERÍA, PERTENENCIAS, RESPALDOS
+   ========================================================================= */
+function renderReports(){
+ rPatients.textContent=patientsAll().length;rStaff.textContent=data.staff.length;rNursing.textContent=data.nursing.length;
+ let st={};patientsAll().forEach(x=>st[x.status||"Internado"]=(st[x.status||"Internado"]||0)+1);statusReport.innerHTML=Object.entries(st).map(([k,v])=>`<div class="mini-row"><span>${esc(k)}</span><b>${v}</b></div>`).join("")||"<div class='empty'>Sin datos</div>";
+ let m={};data.staff.forEach(x=>m[x.sector]=(m[x.sector]||0)+1);sectorReport.innerHTML=Object.entries(m).map(([k,v])=>`<div class="mini-row"><span>${esc(k)}</span><b>${v}</b></div>`).join("")||"<div class='empty'>Sin datos</div>";
+}
+function renderStorage(){let bytes=JSON.stringify(data).length;document.getElementById("storageInfo").innerHTML=`<div class="mini-list"><div class="mini-row"><span>Versión de datos</span><b>${esc(data.version)}</b></div><div class="mini-row"><span>Registros almacenados</span><b>${patientsAll().length+data.staff.length+data.nursing.length+data.care.length+data.meds.length+data.incidents.length+data.appointments.length+data.contacts.length+data.admissions.length}</b></div><div class="mini-row"><span>Tamaño aproximado</span><b>${(bytes/1024).toFixed(1)} KB</b></div><div class="mini-row"><span>Persistencia</span><span class="badge ok">Guardado local y Nube (Fusión inteligente)</span></div></div>`}
+
+function openShiftReport(){
+ const form=document.getElementById("shiftForm");
+ if(!form) return;
+ form.reset(); form.dataset.editId="";
+ document.getElementById("shDate").value=today();
+ document.getElementById("shShift").value="Mañana";
+ document.getElementById("shPriority").value="Normal";
+ openModal("shiftModal");
+}
+document.getElementById("shiftForm").addEventListener("submit",e=>{e.preventDefault();const f=e.currentTarget,editId=f.dataset.editId||"";const x={id:editId||uid("shift"),date:document.getElementById("shDate").value,shift:document.getElementById("shShift").value,staff:document.getElementById("shStaff").value.trim(),priority:document.getElementById("shPriority").value,summary:document.getElementById("shSummary").value.trim(),incidents:document.getElementById("shIncidents").value.trim(),pending:document.getElementById("shPending").value.trim(),notes:document.getElementById("shNotes").value.trim(),createdAt:new Date().toISOString()};if(!x.summary){toast("Completá el resumen general del turno.");return}data.shiftReports=data.shiftReports||[];if(editId){const ix=data.shiftReports.findIndex(r=>r.id===editId);if(ix>=0)data.shiftReports[ix]={...data.shiftReports[ix],...x};delete f.dataset.editId;log("Se editó el reporte general de enfermería · turno "+x.shift,"nursing",x.priority)}else{data.shiftReports.unshift(x);log("Reporte general de enfermería · turno "+x.shift,"nursing",x.priority)}if(!save())return;closeModal("shiftModal");renderAll();toast("Reporte general del turno guardado correctamente")});
+function renderShiftReports(){const root=document.getElementById("shiftReportTable");if(!root)return;const arr=(data.shiftReports||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));root.innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Turno</th><th>Responsable</th><th>Prioridad</th><th>Resumen</th><th>Pendientes</th><th>Acciones</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.shift)}</td><td>${esc(x.staff)}</td><td>${esc(x.priority)}</td><td>${esc(x.summary)}</td><td>${esc(x.pending||"—")}</td><td><div class="record-actions"><button class="btn secondary" onclick="editShiftReport('${x.id}')">Editar</button><button class="btn red" onclick="deleteRecord('shiftReports','${x.id}')">Borrar</button></div></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>Todavía no hay reportes generales de turno.</div>"}
+function editShiftReport(id){
+ const x=data.shiftReports.find(r=>r.id===id); if(!x)return;
+ document.getElementById("shDate").value=x.date||today();
+ document.getElementById("shShift").value=x.shift||"Mañana";
+ document.getElementById("shStaff").value=x.staff||"";
+ document.getElementById("shPriority").value=x.priority||"Normal";
+ document.getElementById("shSummary").value=x.summary||"";
+ document.getElementById("shIncidents").value=x.incidents||"";
+ document.getElementById("shPending").value=x.pending||"";
+ document.getElementById("shNotes").value=x.notes||"";
+ document.getElementById("shiftForm").dataset.editId=id;
+ openModal("shiftModal");
+}
+
+function addClothingItem(){const sector=document.getElementById("bClothingSector").value,item=document.getElementById("bClothingItem").value,qty=Math.max(1,parseInt(document.getElementById("bClothingQty").value||"1",10)),desc=document.getElementById("bClothingDesc").value.trim();const line=`${sector} — ${item}: ${qty}${desc?" ("+desc+")":""}`;const box=document.getElementById("bItems");box.value=box.value.trim()?box.value.trim()+"\n"+line:line;document.getElementById("bClothingQty").value="1";document.getElementById("bClothingDesc").value="";box.dispatchEvent(new Event("input"));toast("Prenda agregada al inventario")}
+function openBelongings(){fillPatientSelect("bPatient");document.getElementById("belongingsForm").reset();bDate.value=nowLocal();openModal("belongingsModal")}
+function resizeImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,850/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);resolve({name:file.name,data:c.toDataURL("image/jpeg",.58)})};img.onerror=reject;img.src=reader.result};reader.readAsDataURL(file)})}
+document.getElementById("belongingsForm").addEventListener("submit",async e=>{e.preventDefault();const files=[...(bPhotos.files||[])];if(files.length>6){toast("Elegí hasta 6 fotos por registro.");return}const photos=[];try{for(const f of files){if(f.size>12*1024*1024){toast("Una foto supera 12 MB; elegí una más pequeña.");return}photos.push(await resizeImage(f))}}catch(err){toast("No se pudieron procesar las fotos.");return}const x={id:uid("bel"),patient:bPatient.value,date:bDate.value,movement:bMovement.value,status:bStatus.value,staff:bStaff.value,receiver:bReceiver.value,items:bItems.value,details:bDetails.value,photos,notes:bNotes.value,createdAt:new Date().toISOString()};data.belongings.unshift(x);log("Inventario de pertenencias actualizado para "+x.patient);if(!save()){data.belongings.shift();return}closeModal("belongingsModal");renderAll();toast("Pertenencias y evidencia guardadas")});
+function renderBelongings(){const q=(document.getElementById("belongingsSearch")?.value||"").toLowerCase(),arr=(data.belongings||[]).filter(x=>[x.patient,x.items,x.details,x.status,x.movement,x.staff].join(" ").toLowerCase().includes(q));document.getElementById("belongingsTable").innerHTML=arr.length?`<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Residente</th><th>Movimiento</th><th>Inventario</th><th>Estado</th><th>Registrado por</th><th>Evidencias</th><th>Acciones</th></tr></thead><tbody>${arr.map(x=>`<tr><td>${esc(x.date?.replace("T"," "))}</td><td><b>${esc(x.patient)}</b></td><td>${esc(x.movement)}</td><td>${esc(x.items)}<br><small>${esc(x.details||"")}</small></td><td>${esc(x.status)}</td><td>${esc(x.staff)}</td><td>${(x.photos||[]).map((ph,i)=>`<a href="${ph.data}" target="_blank" rel="noopener">Foto ${i+1}</a>`).join(" · ")||"—"}</td><td><button class="btn red sm" onclick="deleteRecord('belongings','${x.id}')">Borrar</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No hay inventarios que coincidan con la búsqueda.</div>"}
+function renderMedicalReports(){const q=(document.getElementById("medicalSearch")?.value||"").toLowerCase(),shift=(document.getElementById("medicalShiftFilter")?.value||"");const items=[...(data.doctorReports||[]).map(x=>({...x,kind:"Doctores",dateKey:(x.date||"").slice(0,10),shift:x.shift||"—",summary:x.detail||""})),...(data.nursing||[]).map(x=>({...x,kind:"Enfermería · control",dateKey:(x.date||"").slice(0,10),shift:x.shift||"—",summary:[x.bp&&"PA "+x.bp,x.pulse&&"FC "+x.pulse,x.resp&&"FR "+x.resp,x.temp&&"Temp. "+x.temp,x.obs].filter(Boolean).join(" · ")})),...(data.shiftReports||[]).map(x=>({...x,kind:"Enfermería · reporte de turno",dateKey:x.date||"",summary:[x.summary,x.incidents,x.pending,x.notes].filter(Boolean).join(" · ")}))].filter(x=>(!shift||x.shift===shift)&&[x.date,x.dateKey,x.kind,x.patient,x.doctor,x.staff,x.detail,x.summary,x.priority].join(" ").toLowerCase().includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));const groups={};items.forEach(x=>{const key=x.dateKey||"Sin fecha";(groups[key]=groups[key]||[]).push(x)});document.getElementById("medicalReportsTable").innerHTML=items.length?Object.entries(groups).map(([day,rows])=>`<div class="card" style="margin-bottom:12px"><h3>📅 ${esc(day)} <span class="badge blue">${rows.length} registros</span></h3><div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Turno</th><th>Residente</th><th>Profesional</th><th>Prioridad</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.kind)}</td><td>${esc(x.shift||"—")}</td><td>${esc(x.patient||"General")}</td><td>${esc(x.doctor||x.staff||"—")}</td><td>${esc(x.priority||"Normal")}</td><td>${esc(x.summary||"—")}</td><td>${x.kind==="Doctores"?`<button class="btn secondary sm" onclick="openDoctorReport('${x.id}')">Editar</button>`:x.kind==="Enfermería · control"?`<button class="btn secondary sm" onclick="openNursing('${x.id}')">Editar</button>`:`<button class="btn secondary sm" onclick="editShiftReport('${x.id}')">Editar</button>`}</td></tr>`).join("")}</tbody></table></div></div>`).join(""):"<div class='empty'>No hay informes que coincidan con la búsqueda.</div>"}
+function exportMedicalReports(){const payload={exportedAt:new Date().toISOString(),doctorReports:data.doctorReports,nursing:data.nursing,shiftReports:data.shiftReports};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download="informes-medicos-CARE-"+today()+".json";a.click();URL.revokeObjectURL(url);toast("Informes exportados")}
+
+function renderAll(){
+  renderNursingStaffArea();
+  renderAssistantStaffArea();
+  renderDashboard();
+  renderDoctor();
+  renderPatients();
+  renderRooms();
+  renderNursing();
+  renderCare();
+  renderStaff();
+  renderMeds();
+  renderIncidents();
+  renderAppointments();
+  renderContacts();
+  renderAdmissions();
+  renderReports();
+  renderStorage();
+  renderShiftReports();
+  renderBelongings();
+  renderMedicalReports();
+}
+
+function exportBackup(){
+ let payload={...data,exportedAt:new Date().toISOString(),application:"CARE - Sistema Integral de Gestión Geriátrica"};
+ let blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download="respaldo-CARE-"+today()+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);toast("Respaldo descargado correctamente");
+}
+
+function restoreBackup(ev){
+ let file=ev.target.files?.[0];if(!file)return;let reader=new FileReader();
+ reader.onload=()=>{try{let d=JSON.parse(reader.result);if(!d||!Array.isArray(d.rooms)||!Array.isArray(d.patients))throw new Error("Formato inválido");if(!confirm("Esto reemplazará los datos actuales de CARE. ¿Continuar?"))return;data=normalizeData(d);save();renderAll();toast("Respaldo restaurado correctamente")}catch(e){toast("El archivo no es un respaldo CARE válido.")}ev.target.value=""};reader.readAsText(file);
+}
+
+function tick(){clock.textContent=new Date().toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"})}
+setInterval(tick,1000);
+tick();
+renderAll();
+restoreCareSession();
+</script>
+</body>
+</html>
+</html>
