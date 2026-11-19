@@ -1,0 +1,24 @@
+{
+  "name": "CARE - Centro de Asistencia y Rehabilitación",
+  "short_name": "CARE",
+  "description": "Sistema de gestión - Centro de Asistencia y Rehabilitación S.A.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9b3324",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
