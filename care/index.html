@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CARE 3.0 · Sistema Integral de Gestión Geriátrica</title>
+
+<!-- Configuración PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#174ea6">
+
+<!-- Ícono y modo app para iPhone / iPad -->
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CARE">
+
 <style>
 :root{
  --bg:#eef3f8;--card:#fff;--text:#172033;--muted:#667085;--line:#dfe5ec;
@@ -1760,6 +1771,14 @@ setInterval(tick,1000);
 tick();
 renderAll();
 restoreCareSession();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('Service Worker de CARE registrado'))
+      .catch((err) => console.error('Error al registrar SW:', err));
+  });
+}
 </script>
 </body>
 </html>
